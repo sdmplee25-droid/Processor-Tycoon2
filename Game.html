@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processor Tycoon v2.4.1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #101010;
+            --bg-card: #00FF99;
+            --text-dark: #000000;
+            --text-light: #ffffff;
+            --accent: #00FF99;
+            --accent-hover: #00DD88;
+            --border: #1a1a1a;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            font-family: 'Noto Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow: hidden;
+        }
+
+        .mobile-dashboard {
+            width: 390px;
+            height: 844px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-dark);
+            border: 1px solid #000;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ════════════════ HEADER ════════════════ */
+        .header-mobile {
+            background: linear-gradient(135deg, #1a1a1a 0%, var(--accent) 100%);
+            color: var(--text-dark);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            height: 62px;
+            flex-shrink: 0;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .header-mobile h1 {
+            font-size: 24px;
+            letter-spacing: 0.5px;
+        }
+
+        .day-counter {
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        /* ════════════════ SCROLL CONTAINER ════════════════ */
+        .scroll-container {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            padding: 0;
+        }
+
+        .scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scroll-container::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        .scroll-container::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 3px;
+        }
+
+        /* ════════════════ CARDS ════════════════ */
+        .stat-card {
+            width: 390px;
+            min-height: 108px;
+            background: var(--accent);
+            color: var(--text-dark);
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-bottom: 2px solid var(--bg-dark);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .stat-card:active {
+            background: var(--accent-hover);
+            transform: scale(0.98);
+        }
+
+        .stat-card:hover {
+            background: var(--accent-hover);
+        }
+
+        .stat-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+        }
+
+        .stat-card p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 2px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin: 3px 0;
+            font-weight: 500;
+        }
+
+        .stat-label {
+            opacity: 0.85;
+        }
+
+        .stat-value {
+            font-weight: 700;
+        }
+
+        .stat-value.highlight {
+            color: #c41e3a;
+            font-weight: 800;
+        }
+
+        /* ════════════════ PROGRESS BAR ════════════════ */
+        .progress-container {
+            margin: 4px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 4px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #1a1a1a;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        /* ════════════════ METRICS ════════════════ */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .metric-item {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* ════════════════ TICKER ════════════════ */
+        .ticker-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .ticker-item:last-child {
+            border-bottom: none;
+        }
+
+        .ticker-price {
+            font-weight: 700;
+        }
+
+        .ticker-change {
+            font-weight: 600;
+        }
+
+        .ticker-change.up {
+            color: #388e3c;
+        }
+
+        .ticker-change.down {
+            color: #c41e3a;
+        }
+
+        /* ════════════════ BOTTOM NAVIGATION ════════════════ */
+        .bottom-nav {
+            width: 100%;
+            height: 60px;
+            background: var(--border);
+            border-top: 2px solid var(--accent);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .nav-button {
+            flex: 1;
+            height: 100%;
+            background: transparent;
+            border: none;
+            color: var(--accent);
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 2px;
+            padding: 6px;
+        }
+
+        .nav-button:active {
+            background: rgba(0, 255, 153, 0.15);
+            transform: scale(0.95);
+        }
+
+        .nav-icon {
+            font-size: 20px;
+        }
+
+        /* ════════════════ MODAL ════════════════ */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            width: 90%;
+            max-width: 350px;
+            background: var(--bg-dark);
+            border: 2px solid var(--accent);
+            border-radius: 12px;
+            padding: 20px;
+            color: var(--text-light);
+            animation: slideUp 0.3s ease;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 10px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            background: var(--border);
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        .modal-button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: var(--accent);
+            color: var(--text-dark);
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-button:active {
+            background: var(--accent-hover);
+            transform: scale(0.98);
+        }
+
+        .modal-button.secondary {
+            background: transparent;
+            border: 2px solid var(--accent);
+            color: var(--accent);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* ════════════════ LOADING ════════════════ */
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            border-top: 2px solid var(--text-dark);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ════════════════ RESPONSIVE ════════════════ */
+        @media (max-width: 410px) {
+            .mobile-dashboard {
+                width: 100vw;
+                height: 100vh;
+                border: none;
+                max-width: 390px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-dashboard">
+        <!-- HEADER -->
+        <header class="header-mobile">
+            <h1>⚙️ Processor Tycoon</h1>
+            <span class="day-counter" id="dayCounter">Day 0</span>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <div class="scroll-container" id="scrollContainer">
+            
+            <!-- CARD 1: Company Info -->
+            <div class="stat-card" onclick="showModal('company')">
+                <h3>🏢 Компания</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Название:</span>
+                    <span class="stat-value" id="companyName">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Рейтинг:</span>
+                    <span class="stat-value" id="companyRank">#0</span>
+                </div>
+            </div>
+
+            <!-- CARD 2: Capital & Trust -->
+            <div class="stat-card" onclick="showModal('capital')">
+                <h3>💳 Финансы</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Капитал:</span>
+                    <span class="stat-value" id="capital">$0.00</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Доверие:</span>
+                    <span class="stat-value" id="trust">0/100</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="trustBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 3: Chips Stats -->
+            <div class="stat-card" onclick="showModal('chips')">
+                <h3>📦 Чипы</h3>
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div style="font-size: 12px; opacity: 0.8;">Создано</div>
+                        <div style="font-size: 18px;" id="chipsTotal">0</div>
+                    </div>
+                    <div class="metric-item">
+                        <div style="font-size: 12px; opacity: 0.8;">На продажу</div>
+                        <div style="font-size: 18px;" id="chipsForSale">0</div>
+                    </div>
+                    <div class="metric-item">
+                        <div style="font-size: 12px; opacity: 0.8;">Контракты</div>
+                        <div style="font-size: 18px;" id="chipsContracts">0</div>
+                    </div>
+                    <div class="metric-item">
+                        <div style="font-size: 12px; opacity: 0.8;">Дневной доход</div>
+                        <div style="font-size: 14px;" id="chipsDailyProfit">$0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 4: R&D Progress -->
+            <div class="stat-card" onclick="showModal('research')">
+                <h3>🔬 Исследования</h3>
+                <div class="stat-row">
+                    <span class="stat-label">В процессе:</span>
+                    <span class="stat-value" id="researchActive">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Завершено:</span>
+                    <span class="stat-value" id="researchDone">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Текущий:</span>
+                    <span class="stat-value" id="researchCurrent">-</span>
+                </div>
+            </div>
+
+            <!-- CARD 5: Technology Levels -->
+            <div class="stat-card" onclick="showModal('tech')">
+                <h3>⚙️ Технологии</h3>
+                <div class="stat-row">
+                    <span class="stat-label">🔬 Техпроцесс:</span>
+                    <span class="stat-value" id="techProc">10000 нм</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">🧩 Ядра:</span>
+                    <span class="stat-value" id="techCores">1</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">⚡ Частота:</span>
+                    <span class="stat-value" id="techFreq">1 МГц</span>
+                </div>
+            </div>
+
+            <!-- CARD 6: Workers -->
+            <div class="stat-card" onclick="showModal('workers')">
+                <h3>👥 Команда</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Сотрудников:</span>
+                    <span class="stat-value" id="workersCount">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Средний уровень:</span>
+                    <span class="stat-value" id="workersSkill">0.0</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="efficiencyBar" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text" id="efficiencyText">0% эффективность</div>
+                </div>
+            </div>
+
+            <!-- CARD 7: Market & Shares -->
+            <div class="stat-card" onclick="showModal('shares')">
+                <h3>📊 Акции</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Цена акции:</span>
+                    <span class="stat-value" id="sharePrice">$10.00</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">На рынке:</span>
+                    <span class="stat-value" id="sharesMarket">5,000</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Стоимость:</span>
+                    <span class="stat-value highlight" id="companyValue">$0</span>
+                </div>
+            </div>
+
+            <!-- CARD 8: Messages & Contracts -->
+            <div class="stat-card" onclick="showModal('messages')">
+                <h3>📩 Сообщения</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Ожидающих:</span>
+                    <span class="stat-value" id="messagePending">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Активных контрактов:</span>
+                    <span class="stat-value" id="contractsActive">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Популярность:</span>
+                    <span class="stat-value" id="popularity">0</span>
+                </div>
+            </div>
+
+            <!-- CARD 9: Drivers -->
+            <div class="stat-card" onclick="showModal('drivers')">
+                <h3>🖥️ Драйверы</h3>
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div style="font-size: 12px; opacity: 0.8;">🪟 Windows</div>
+                        <div style="font-size: 16px;" id="driverWin">0%</div>
+                    </div>
+                    <div class="metric-item">
+                        <div style="font-size: 12px; opacity: 0.8;">🍎 macOS</div>
+                        <div style="font-size: 16px;" id="driverMac">0%</div>
+                    </div>
+                    <div class="metric-item">
+                        <div style="font-size: 12px; opacity: 0.8;">🐧 Linux</div>
+                        <div style="font-size: 16px;" id="driverLin">0%</div>
+                    </div>
+                    <div class="metric-item">
+                        <div style="font-size: 12px; opacity: 0.8;">Множитель</div>
+                        <div style="font-size: 16px;" id="driverMult">×0.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARD 10: Online Players & Market -->
+            <div class="stat-card" onclick="showModal('global')">
+                <h3>🌍 Мировой рынок</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Игроков онлайн:</span>
+                    <span class="stat-value" id="playersOnline">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Всего капитала:</span>
+                    <span class="stat-value" id="totalMarket">$0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Версия:</span>
+                    <span class="stat-value" id="gameVersion">2.4.1</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- BOTTOM NAVIGATION -->
+        <nav class="bottom-nav">
+            <button class="nav-button" onclick="action('menu')">
+                <div class="nav-icon">🏠</div>
+                <div>Меню</div>
+            </button>
+            <button class="nav-button" onclick="action('create')">
+                <div class="nav-icon">🚀</div>
+                <div>Создать</div>
+            </button>
+            <button class="nav-button" onclick="action('refresh')">
+                <div class="nav-icon">🔄</div>
+                <div>Обновить</div>
+            </button>
+            <button class="nav-button" onclick="action('donate')">
+                <div class="nav-icon">⭐</div>
+                <div>Донат</div>
+            </button>
+            <button class="nav-button" onclick="action('help')">
+                <div class="nav-icon">📖</div>
+                <div>Помощь</div>
+            </button>
+        </nav>
+    </div>
+
+    <!-- MODALS -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content" id="modalContent">
+            <!-- Modals будут генерироваться динамически -->
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        // ════════════════ CONFIG ════════════════
+        const API_URL = 'http://localhost:8000'; // Замени на свой backend URL
+        const UPDATE_INTERVAL = 2000; // 2 секунды
+
+        // ════════════════ STATE ════════════════
+        let gameState = {
+            day: 0,
+            company: {
+                name: 'Твоя компания',
+                capital: 100000,
+                trust: 50,
+                rank: 1,
+                totalShares: 10000,
+                sharesMarket: 5000,
+                sharePrice: 10.0,
+                popularity: 0,
+                value: 0
+            },
+            chips: {
+                total: 0,
+                forSale: 0,
+                inContract: 0,
+                dailyProfit: 0
+            },
+            research: {
+                active: 0,
+                completed: 0,
+                current: '-',
+                techproc: 10000,
+                cores: 1,
+                freq: 1
+            },
+            workers: {
+                count: 0,
+                avgSkill: 0,
+                efficiency: 0
+            },
+            drivers: {
+                win: 0,
+                mac: 0,
+                lin: 0,
+                mult: 0
+            },
+            messages: {
+                pending: 0,
+                activeContracts: 0
+            },
+            global: {
+                onlinePlayers: 0,
+                totalMarket: 0,
+                version: '2.4.1'
+            }
+        };
+
+        // ════════════════ DOM UPDATES ════════════════
+        function updateUI() {
+            // Header
+            document.getElementById('dayCounter').textContent = `Day ${gameState.day}`;
+
+            // Company Card
+            document.getElementById('companyName').textContent = gameState.company.name;
+            document.getElementById('companyRank').textContent = `#${gameState.company.rank}`;
+
+            // Capital Card
+            document.getElementById('capital').textContent = `$${formatNumber(gameState.company.capital)}`;
+            document.getElementById('trust').textContent = `${Math.round(gameState.company.trust)}/100`;
+            document.getElementById('trustBar').style.width = `${gameState.company.trust}%`;
+
+            // Chips Card
+            document.getElementById('chipsTotal').textContent = gameState.chips.total;
+            document.getElementById('chipsForSale').textContent = gameState.chips.forSale;
+            document.getElementById('chipsContracts').textContent = gameState.chips.inContract;
+            document.getElementById('chipsDailyProfit').textContent = `$${formatNumber(gameState.chips.dailyProfit)}`;
+
+            // Research Card
+            document.getElementById('researchActive').textContent = gameState.research.active;
+            document.getElementById('researchDone').textContent = gameState.research.completed;
+            document.getElementById('researchCurrent').textContent = gameState.research.current;
+
+            // Tech Card
+            document.getElementById('techProc').textContent = `${gameState.research.techproc} нм`;
+            document.getElementById('techCores').textContent = `${gameState.research.cores}`;
+            document.getElementById('techFreq').textContent = `${gameState.research.freq} МГц`;
+
+            // Workers Card
+            document.getElementById('workersCount').textContent = gameState.workers.count;
+            document.getElementById('workersSkill').textContent = gameState.workers.avgSkill.toFixed(1);
+            document.getElementById('efficiencyBar').style.width = `${gameState.workers.efficiency}%`;
+            document.getElementById('efficiencyText').textContent = `${Math.round(gameState.workers.efficiency)}% эффективность`;
+
+            // Shares Card
+            document.getElementById('sharePrice').textContent = `$${gameState.company.sharePrice.toFixed(2)}`;
+            document.getElementById('sharesMarket').textContent = `${formatNumber(gameState.company.sharesMarket)}`;
+            document.getElementById('companyValue').textContent = `$${formatNumber(gameState.company.value)}`;
+
+            // Messages Card
+            document.getElementById('messagePending').textContent = gameState.messages.pending;
+            document.getElementById('contractsActive').textContent = gameState.messages.activeContracts;
+            document.getElementById('popularity').textContent = `${Math.round(gameState.company.popularity)}`;
+
+            // Drivers Card
+            document.getElementById('driverWin').textContent = `${Math.round(gameState.drivers.win)}%`;
+            document.getElementById('driverMac').textContent = `${Math.round(gameState.drivers.mac)}%`;
+            document.getElementById('driverLin').textContent = `${Math.round(gameState.drivers.lin)}%`;
+            document.getElementById('driverMult').textContent = `×${gameState.drivers.mult.toFixed(2)}`;
+
+            // Global Card
+            document.getElementById('playersOnline').textContent = gameState.global.onlinePlayers;
+            document.getElementById('totalMarket').textContent = `$${formatNumber(gameState.global.totalMarket)}`;
+            document.getElementById('gameVersion').textContent = gameState.global.version;
+        }
+
+        // ════════════════ API FUNCTIONS ════════════════
+        async function fetchGameState() {
+            try {
+                // Здесь будет реальный API запрос
+                // const response = await fetch(`${API_URL}/api/menu`, {
+                //     headers: { 'Authorization': `Bearer ${getToken()}` }
+                // });
+                // const data = await response.json();
+                // gameState = { ...gameState, ...data };
+
+                // На время разработки - используем тестовые данные
+                gameState.day++;
+                gameState.company.capital += Math.random() * 5000;
+                gameState.company.trust = Math.min(99.9, gameState.company.trust + 0.1);
+                gameState.chips.dailyProfit = Math.random() * 50000;
+
+                updateUI();
+            } catch (error) {
+                console.error('Failed to fetch game state:', error);
+            }
+        }
+
+        // ════════════════ MODAL FUNCTIONS ════════════════
+        function showModal(type) {
+            const overlay = document.getElementById('modalOverlay');
+            const content = document.getElementById('modalContent');
+            
+            let html = '';
+
+            switch(type) {
+                case 'company':
+                    html = `
+                        <div class="modal-header">🏢 Компания</div>
+                        <div class="stat-row">
+                            <span class="stat-label">Название:</span>
+                            <span class="stat-value">${gameState.company.name}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Рейтинг:</span>
+                            <span class="stat-value">#${gameState.company.rank}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Основана:</span>
+                            <span class="stat-value">Day 0</span>
+                        </div>
+                        <button class="modal-button" onclick="action('rename')">✏️ Переименовать</button>
+                        <button class="modal-button secondary" onclick="closeModal()">Закрыть</button>
+                    `;
+                    break;
+
+                case 'capital':
+                    html = `
+                        <div class="modal-header">💳 Финансы</div>
+                        <div class="stat-row">
+                            <span class="stat-label">Капитал:</span>
+                            <span class="stat-value">$${formatNumber(gameState.company.capital)}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Доверие:</span>
+                            <span class="stat-value">${Math.round(gameState.company.trust)}/100</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${gameState.company.trust}%"></div>
+                        </div>
+                        <p style="font-size: 12px; opacity: 0.8; margin-top: 12px;">
+                            Доверие влияет на продажи и условия контрактов.
+                        </p>
+                        <button class="modal-button secondary" onclick="closeModal()">Закрыть</button>
+                    `;
+                    break;
+
+                case 'chips':
+                    html = `
+                        <div class="modal-header">📦 Чипы</div>
+                        <div class="stat-row">
+                            <span class="stat-label">Создано:</span>
+                            <span class="stat-value">${gameState.chips.total}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">На продажу:</span>
+                            <span class="stat-value">${gameState.chips.forSale}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">В контрактах:</span>
+                            <span class="stat-value">${gameState.chips.inContract}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Дневной доход:</span>
+                            <span class="stat-value">$${formatNumber(gameState.chips.dailyProfit)}</span>
+                        </div>
+                        <button class="modal-button" onclick="action('chips')">Управление чипами</button>
+                        <button class="modal-button secondary" onclick="closeModal()">Закрыть</button>
+                    `;
+                    break;
+
+                case 'research':
+                    html = `
+                        <div class="modal-header">🔬 Исследования</div>
+                        <div class="stat-row">
+                            <span class="stat-label">В процессе:</span>
+                            <span class="stat-value">${gameState.research.active}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Завершено:</span>
+                            <span class="stat-value">${gameState.research.completed}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Текущий проект:</span>
+                            <span class="stat-value">${gameState.research.current}</span>
+                        </div>
+                        <button class="modal-button" onclick="action('research')">Начать исследование</button>
+                        <button class="modal-button secondary" onclick="closeModal()">Закрыть</button>
+                    `;
+                    break;
+
+                case 'tech':
+                    html = `
+                        <div class="modal-header">⚙️ Технологии</div>
+                        <div class="stat-row">
+                            <span class="stat-label">🔬 Техпроцесс:</span>
+                            <span class="stat-value">${gameState.research.techproc} нм</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">🧩 Ядра:</span>
+                            <span class="stat-value">${gameState.research.cores}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">⚡ Частота:</span>
+                            <span class="stat-value">${gameState.research.freq} МГц</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">💾 L1 Cache:</span>
+                            <span class="stat-value">8 КБ</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">💽 L2 Cache:</span>
+                            <span class="stat-value">64 КБ</span>
+                        </div>
+                        <button class="modal-button secondary" onclick="closeModal()">Закрыть</button>
+                    `;
+                    break;
+
+                case 'workers':
+                    html = `
+                        <div class="modal-header">👥 Команда</div>
+                        <div class="stat-row">
+                            <span class="stat-label">Сотрудников:</span>
+                            <span class="stat-value">${gameState.workers.count}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Средний уровень:</span>
+                            <span class="stat-value">${gameState.workers.avgSkill.toFixed(1)}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${gameState.workers.efficiency}%"></div>
+                        </div>
+                        <p style="font-size: 12px; opacity: 0.8; margin-top: 12px;">
+                            Эффективность: ${Math.round(gameState.workers.efficiency)}%
+                        </p>
+                        <button class="modal-button" onclick="action('workers')">Управление командой</button>
+                        <button class="modal-button secondary" onclick="closeModal()">Закрыть</button>
+                    `;
+                    break;
+
+                case 'shares':
+                    html = `
+                        <div class="modal-header">📊 Акции</div>
+                        <div class="stat-row">
+                            <span class="stat-label">Цена:</span>
+                            <span class="stat-value">$${gameState.company.sharePrice.toFixed(2)}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">На рынке:</span>
+                            <span class="stat-value">${formatNumber(gameState.company.sharesMarket)}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Всего выпущено:</span>
+                            <span class="stat-value">${formatNumber(gameState.company.totalShares)}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Стоимость компании:</span>
+                            <span class="stat-value highlight">$${formatNumber(gameState.company.value)}</span>
+                        </div>
+                        <button class="modal-button" onclick="action('shares')">Торговать акциями</button>
+                        <button class="modal-button secondary" onclick="closeModal()">Закрыть</button>
+                    `;
+                    break;
+
+                case 'messages':
+                    html = `
+                        <div class="modal-header">📩 Сообщения</div>
+                        <div class="stat-row">
+                            <span class="stat-label">Ожидающих:</span>
+                            <span class="stat-value">${gameState.messages.pending}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Активных контрактов:</span>
+                            <span class="stat-value">${gameState.messages.activeContracts}</span>
+                        </div>
+                        <button class="modal-button" onclick="action('messages')">Просмотреть контракты</button>
+                        <button class="modal-button secondary" onclick="closeModal()">Закрыть</button>
+                    `;
+                    break;
+
+                case 'drivers':
+                    html = `
+                        <div class="modal-header">🖥️ Драйверы</div>
+                        <div class="stat-row">
+                            <span class="stat-label">🪟 Windows:</span>
+                            <span class="stat-value">${Math.round(gameState.drivers.win)}%</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">🍎 macOS:</span>
+                            <span class="stat-value">${Math.round(gameState.drivers.mac)}%</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">🐧 Linux:</span>
+                            <span class="stat-value">${Math.round(gameState.drivers.lin)}%</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Множитель продаж:</span>
+                            <span class="stat-value">×${gameState.drivers.mult.toFixed(2)}</span>
+                        </div>
+                        <button class="modal-button" onclick="action('drivers')">Разработать драйверы</button>
+                        <button class="modal-button secondary" onclick="closeModal()">Закрыть</button>
+                    `;
+                    break;
+
+                case 'global':
+                    html = `
+                        <div class="modal-header">🌍 Мировой рынок</div>
+                        <div class="stat-row">
+                            <span class="stat-label">Игроков онлайн:</span>
+                            <span class="stat-value">${gameState.global.onlinePlayers}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Всего капитала:</span>
+                            <span class="stat-value">$${formatNumber(gameState.global.totalMarket)}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Версия игры:</span>
+                            <span class="stat-value">${gameState.global.version}</span>
+                        </div>
+                        <button class="modal-button" onclick="action('ranking')">Рейтинг</button>
+                        <button class="modal-button secondary" onclick="closeModal()">Закрыть</button>
+                    `;
+                    break;
+
+                default:
+                    html = '<div class="modal-header">Информация</div><p>Модаль не найдена</p>';
+            }
+
+            content.innerHTML = html;
+            overlay.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        // ════════════════ ACTIONS ════════════════
+        function action(type) {
+            console.log('Action:', type);
+            closeModal();
+
+            switch(type) {
+                case 'menu':
+                    fetchGameState();
+                    break;
+                case 'create':
+                    showModal('chips');
+                    break;
+                case 'refresh':
+                    fetchGameState();
+                    break;
+                case 'donate':
+                    alert('Откроется страница доната');
+                    break;
+                case 'help':
+                    alert('Справка: Processor Tycoon v2.4.1\n\nСоздавай чипы, продавай их и зарабатывай!');
+                    break;
+                case 'rename':
+                    const newName = prompt('Новое название компании:', gameState.company.name);
+                    if (newName) {
+                        gameState.company.name = newName;
+                        updateUI();
+                    }
+                    break;
+                default:
+                    alert('Функция в разработке: ' + type);
+            }
+        }
+
+        // ════════════════ UTILITIES ════════════════
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(2) + 'K';
+            return num.toFixed(0);
+        }
+
+        // ════════════════ INIT ════════════════
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Processor Tycoon v2.4.1 loaded');
+            updateUI();
+            
+            // Автообновление каждые 2 секунды
+            setInterval(fetchGameState, UPDATE_INTERVAL);
+
+            // Закрытие модали при клике на фон
+            document.getElementById('modalOverlay').addEventListener('click', (e) => {
+                if (e.target.id === 'modalOverlay') {
+                    closeModal();
+                }
+            });
+        });
+
+        // Обработка Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
