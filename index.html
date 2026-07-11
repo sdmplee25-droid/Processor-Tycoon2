@@ -2,90 +2,283 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#002712">
-<title>Processor Tycoon v2.4.1</title>
+<title>Processor Tycoon</title>
 <style>
-:root{--bg:#002712;--panel:#004C22;--card:#003318;--input:#001a0c;--accent:#00FF73;--accent2:#00823A;--text:#E8F7EE;--muted:#7AB89A;--border:rgba(0,255,115,0.15);--st:env(safe-area-inset-top,12px);--sb:env(safe-area-inset-bottom,12px)}
+/* ═══════════ DESIGN SYSTEM (из твоего макета) ═══════════ */
+:root{
+  --bg:#002712;
+  --panel:#004C22;
+  --panel2:#013d1c;
+  --card:#004C22;
+  --card-hi:#01632d;
+  --input:#001a0c;
+  --g1:#00FF73;
+  --g2:#00823A;
+  --name:#004720;
+  --text:#E8F7EE;
+  --text2:#b8e6c8;
+  --muted:#6fba8f;
+  --border:rgba(0,255,115,.18);
+  --st:env(safe-area-inset-top, 0px);
+  --sb:env(safe-area-inset-bottom, 0px);
+  --radius:18px;
+}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100dvh;width:100vw;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;overflow:hidden;overscroll-behavior:none}
-.app{display:flex;flex-direction:column;height:100%}
-.header{background:var(--panel);padding:calc(var(--st) + 8px) 12px 8px;text-align:center;position:relative;z-index:2;box-shadow:0 4px 16px rgba(0,0,0,0.3)}
-.header::after{content:'';position:absolute;right:0;top:0;width:80px;height:80px;background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:0 0 0 24px;opacity:0.85}
-.cname{font-size:clamp(18px,4.5vw,26px);font-weight:600;color:#004720;margin-bottom:6px;text-shadow:0 0 10px rgba(0,255,115,0.3);position:relative;z-index:1}
-.stats{display:flex;gap:5px;font-size:10.5px;color:var(--muted);font-family:ui-monospace,monospace;flex-wrap:wrap;justify-content:center}
-.stats span{background:rgba(0,255,115,0.08);padding:3px 7px;border-radius:5px;border:1px solid var(--border)}
-.main{flex:1;overflow-y:auto;padding:10px;padding-bottom:calc(10px + var(--sb));display:flex;flex-direction:column;gap:8px;scrollbar-width:none}
+html,body{
+  height:100%; width:100%;
+  background:var(--bg); color:var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  overflow:hidden; overscroll-behavior:none;
+}
+/* ── shell ── */
+.app{
+  width:100%; max-width:500px; height:100dvh; margin:0 auto;
+  display:flex; flex-direction:column; background:var(--bg);
+  position:relative; overflow:hidden;
+}
+/* ── HEADER ── */
+.header{
+  position:relative; flex:0 0 auto;
+  background:var(--panel);
+  padding: calc(var(--st) + 14px) 16px 12px;
+  text-align:center;
+  min-height: calc(var(--st) + 110px);
+  overflow:hidden;
+}
+/* зелёный угол как в макете */
+.header .corner{
+  position:absolute; right:0; top:0;
+  width: clamp(72px, 22vw, 105px);
+  height: clamp(72px, 22vw, 105px);
+  background: linear-gradient(180deg, var(--g1) 0%, var(--g2) 100%);
+  border-radius: 0 0 0 28px;
+  z-index:0;
+  pointer-events:none;
+}
+.cname{
+  position:relative; z-index:1;
+  color: var(--name);
+  font-size: clamp(22px, 7vw, 32px);
+  font-weight: 700;
+  line-height:1.15;
+  word-break:break-word;
+  text-shadow: 0 1px 0 rgba(255,255,255,.12);
+  margin-bottom: 10px;
+}
+.pills{
+  position:relative; z-index:1;
+  display:flex; flex-wrap:wrap; gap:6px;
+  justify-content:center;
+}
+.pill{
+  background: rgba(0,20,10,.45);
+  border:1px solid rgba(0,255,115,.22);
+  color: var(--text2);
+  font-size: clamp(10px, 2.8vw, 12px);
+  font-weight:600;
+  padding: 5px 9px;
+  border-radius: 999px;
+  white-space:nowrap;
+}
+/* ── CONTENT ── */
+.main{
+  flex:1 1 auto;
+  overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding: 12px 12px 8px;
+  display:flex; flex-direction:column; gap:10px;
+  scrollbar-width:none;
+}
 .main::-webkit-scrollbar{display:none}
-.card{background:var(--panel);border-radius:12px;padding:11px 13px;border:1px solid var(--border);position:relative;overflow:hidden}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:0.6}
-.lbl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
-.val{font-size:16px;font-weight:600;font-family:ui-monospace,monospace}
-.nav{background:linear-gradient(180deg,var(--accent),var(--accent2));display:flex;padding:6px 4px calc(6px + var(--sb));overflow-x:auto;scrollbar-width:none;gap:4px;box-shadow:0 -4px 16px rgba(0,0,0,0.3)}
+/* ── CARDS ── */
+.card{
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 14px rgba(0,0,0,.22);
+}
+.card.flat{ background: var(--panel2); }
+.lbl{
+  color: var(--muted);
+  font-size: clamp(10px, 2.8vw, 12px);
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.val{
+  color: var(--text) !important;
+  font-size: clamp(15px, 4.4vw, 18px);
+  font-weight: 700;
+  line-height: 1.25;
+  word-break: break-word;
+}
+.sub{
+  color: var(--text2);
+  font-size: clamp(11px, 3.2vw, 13px);
+  margin-top: 3px;
+  line-height: 1.35;
+}
+.sec{
+  color: var(--g1);
+  font-size: clamp(13px, 3.8vw, 15px);
+  font-weight: 800;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  margin: 4px 2px 0;
+}
+/* ── BUTTONS ── */
+.btn{
+  display:block; width:100%;
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: clamp(13px, 3.6vw, 15px);
+  font-weight: 700;
+  text-align:center;
+  cursor:pointer;
+  font-family:inherit;
+}
+.btn:active{ transform: scale(.98); }
+.btn.pri{
+  background: linear-gradient(180deg, var(--g1), var(--g2));
+  color: #00300f;
+  border: none;
+  box-shadow: 0 6px 16px rgba(0,255,115,.25);
+}
+.btn.dng{ background:#4a1515; border-color:#7a2a2a; color:#ffb0b0; }
+.btn.sm{ padding:9px 11px; font-size:12.5px; }
+.btn:disabled{ opacity:.4; }
+.g2{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.g3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+/* ── BOTTOM NAV ── */
+.nav{
+  flex:0 0 auto;
+  background: linear-gradient(180deg, var(--g1) 0%, var(--g2) 100%);
+  padding: 10px 8px calc(10px + var(--sb));
+  display:flex; gap:6px;
+  overflow-x:auto; -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  box-shadow: 0 -8px 24px rgba(0,0,0,.3);
+}
 .nav::-webkit-scrollbar{display:none}
-.nb{flex:0 0 auto;background:rgba(0,39,18,0.9);color:var(--accent);border:1px solid var(--border);padding:6px 10px;border-radius:9px;font-size:11px;font-weight:600;white-space:nowrap;cursor:pointer}
-.nb.act{background:var(--bg);box-shadow:0 3px 8px rgba(0,0,0,0.4)}
-.btn{background:var(--card);border:1px solid var(--border);color:var(--text);padding:9px 11px;border-radius:8px;font-weight:500;text-align:center;margin-top:4px;font-size:13px;width:100%;cursor:pointer;font-family:inherit}
-.btn:active{background:var(--panel)}
-.btn.pri{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#001a0c;border:none;font-weight:600}
-.btn.dng{background:#4a1515;border-color:#7a2a2a;color:#ff9999}
-.btn.sm{padding:6px 8px;font-size:12px}
-.btn:disabled{opacity:0.4}
-.inp,select{width:100%;padding:9px 11px;background:var(--input);border:1px solid var(--border);color:var(--text);border-radius:8px;font-size:15px;margin-bottom:6px;font-family:inherit}
-.mdl{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:none;justify-content:center;align-items:center;z-index:100;padding:10px}
-.mdl.act{display:flex}
-.mdlc{background:var(--panel);padding:14px;border-radius:14px;border:1px solid var(--border);width:100%;max-width:380px;max-height:90vh;overflow-y:auto}
-.mdlt{font-size:17px;font-weight:600;margin-bottom:10px;color:var(--accent);display:flex;justify-content:space-between;align-items:center}
-.mdlt button{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer}
-.prog{height:6px;background:rgba(255,255,255,0.08);border-radius:3px;margin-top:5px;overflow:hidden}
-.pbar{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:3px;transition:width 0.5s}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
-.tag{display:inline-block;padding:2px 6px;border-radius:5px;font-size:10px;margin-right:3px}
-.tag.cpu{background:#1a3a5c;color:#8cf}.tag.gpu{background:#3a1a5c;color:#c8f}
-.tag.budget{background:#1a3a1a;color:#8f8}.tag.mid{background:#3a3a1a;color:#ff8}.tag.flagship{background:#3a1a1a;color:#f88}
-.toasts{position:fixed;top:12px;left:0;right:0;z-index:999;display:flex;flex-direction:column;align-items:center;gap:5px;pointer-events:none}
-.toast{background:var(--panel);color:var(--text);padding:8px 14px;border-radius:8px;border:1px solid var(--border);font-size:13px;max-width:90%;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.4);animation:sd 0.3s}
-@keyframes sd{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-.news{padding:7px 9px;border-bottom:1px solid var(--border);font-size:12.5px}
-.news:last-child{border:none}
-.row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px}
-.row:last-child{border:none}
-h3{font-size:13px;color:var(--accent);margin:8px 0 4px;text-transform:uppercase;letter-spacing:1px}
-.muted{font-size:11px;color:var(--muted)}
-.dev{position:fixed;bottom:0;left:0;right:0;background:#000;color:#0f0;font-family:monospace;font-size:11px;padding:6px;max-height:200px;z-index:200;display:none;border-top:2px solid #0f0}
-.dev.act{display:flex;flex-direction:column}
-.dev-log{flex:1;overflow-y:auto;max-height:150px}
-.dev-inp{width:100%;background:#000;border:none;border-top:1px solid #0f0;color:#0f0;font-family:monospace;padding:4px;font-size:11px;outline:none}
+.nb{
+  flex:0 0 auto;
+  background: rgba(0,39,18,.92);
+  color: var(--g1);
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: 14px;
+  padding: 9px 12px;
+  font-size: clamp(10px, 2.7vw, 12px);
+  font-weight: 700;
+  white-space:nowrap;
+  cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  min-width: 64px;
+}
+.nb.act{
+  background: #001a0c;
+  color: var(--g1);
+  box-shadow: 0 4px 12px rgba(0,0,0,.35);
+}
+.nb .ico{ font-size: 16px; line-height:1; }
+/* ── PROGRESS ── */
+.prog{ height:7px; background:rgba(0,0,0,.3); border-radius:99px; margin-top:7px; overflow:hidden; }
+.pbar{ height:100%; background:linear-gradient(90deg,var(--g2),var(--g1)); border-radius:99px; }
+/* ── TAGS ── */
+.tag{ display:inline-block; padding:2px 7px; border-radius:6px; font-size:10px; font-weight:700; margin-right:4px; }
+.tag.cpu{background:#1a3a5c;color:#8cf}
+.tag.gpu{background:#3a1a5c;color:#c8f}
+.tag.budget{background:#1a3a1a;color:#8f8}
+.tag.mid{background:#3a3a1a;color:#ff8}
+.tag.flagship{background:#3a1a1a;color:#f88}
+/* ── FORM ── */
+.inp, select{
+  width:100%; padding:12px 14px;
+  background:var(--input); border:1px solid var(--border);
+  color:var(--text); border-radius:14px;
+  font-size:15px; font-family:inherit; margin-bottom:8px;
+}
+/* ── MODAL ── */
+.mdl{ position:fixed; inset:0; background:rgba(0,0,0,.82); display:none; align-items:center; justify-content:center; z-index:100; padding:14px; }
+.mdl.act{ display:flex; }
+.mdlc{
+  background:var(--panel); border:1px solid var(--border);
+  border-radius:20px; padding:16px; width:100%; max-width:400px;
+  max-height:88dvh; overflow-y:auto;
+}
+.mdlt{ color:var(--g1); font-size:17px; font-weight:800; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+.mdlt button{ background:none; border:none; color:var(--muted); font-size:22px; cursor:pointer; }
+.row{ display:flex; justify-content:space-between; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,.06); font-size:13px; }
+.row:last-child{ border:none; }
+.row span:last-child{ color:var(--text); font-weight:700; text-align:right; }
+.row span:first-child{ color:var(--muted); }
+/* ── TOAST ── */
+.toasts{ position:fixed; top:calc(var(--st) + 10px); left:0; right:0; z-index:200; display:flex; flex-direction:column; align-items:center; gap:6px; pointer-events:none; }
+.toast{
+  background:rgba(0,30,15,.95); color:var(--text);
+  border:1px solid var(--border); border-radius:999px;
+  padding:10px 16px; font-size:13px; font-weight:600;
+  max-width:90%; text-align:center;
+  box-shadow:0 8px 24px rgba(0,0,0,.4);
+  animation: pop .25s ease;
+}
+@keyframes pop{ from{opacity:0; transform:translateY(-8px)} to{opacity:1; transform:none} }
+/* ── NEWS ── */
+.news{ padding:9px 0; border-bottom:1px solid rgba(255,255,255,.06); }
+.news:last-child{ border:none; }
+/* ── DEV ── */
+.dev{ position:fixed; bottom:0; left:0; right:0; background:#000; color:#0f0; font-family:monospace; font-size:11px; max-height:40dvh; z-index:300; display:none; flex-direction:column; border-top:2px solid #0f0; }
+.dev.act{ display:flex; }
+.dev-log{ flex:1; overflow-y:auto; padding:6px; max-height:30dvh; }
+.dev-inp{ width:100%; background:#000; border:none; border-top:1px solid #0f0; color:#0f0; font-family:monospace; padding:8px; outline:none; }
+.empty{ color:var(--muted); font-size:13px; padding:4px 0; }
 </style>
 </head>
 <body>
 <div class="app">
   <header class="header">
+    <div class="corner"></div>
     <div class="cname" id="ui-c">Silicon Forge</div>
-    <div class="stats">
-      <span id="ui-d">📅 --</span><span id="ui-cap">💵 $0</span>
-      <span id="ui-t">🛡 50%</span><span id="ui-p">📣 0</span>
-      <span id="ui-day">День 0</span><span id="ui-drv">🖥 ×0</span>
+    <div class="pills">
+      <span class="pill" id="ui-d">📅 —</span>
+      <span class="pill" id="ui-cap">💵 $0</span>
+      <span class="pill" id="ui-t">🛡 50%</span>
+      <span class="pill" id="ui-p">📣 0</span>
+      <span class="pill" id="ui-day">День 0</span>
+      <span class="pill" id="ui-drv">🖥 ×0.00</span>
     </div>
   </header>
+
   <main class="main" id="content"></main>
+
   <nav class="nav" id="nav"></nav>
 </div>
+
 <div class="mdl" id="mdl"><div class="mdlc" id="mdlc"></div></div>
 <div class="toasts" id="toasts"></div>
-<div class="dev" id="dev"><div class="dev-log" id="dev-log"></div><input class="dev-inp" id="dev-inp" placeholder="Dev> help"></div>
+<div class="dev" id="dev">
+  <div class="dev-log" id="dev-log"></div>
+  <input class="dev-inp" id="dev-inp" placeholder="Dev> help" autocomplete="off">
+</div>
 
 <script>
 'use strict';
-// ═══════ CONFIG (1:1 Python) ═══════
+/* ════════════════════════════════════════════════
+   ENGINE + ALL FEATURES (full offline port)
+   UI rewritten to match your green mockup
+════════════════════════════════════════════════ */
 const VERSION="2.4.1";
 let SEC_PER_DAY=2;
 const GAME_START=new Date(1975,0,11);
 const MONTHS=["янв","фев","мар","апр","мая","июн","июл","авг","сен","окт","ноя","дек"];
-const RD_MULT=1.2,CHIP_LIFETIME=540,DRV_DECAY=30;
+const RD_MULT=1.2, CHIP_LIFETIME=540, DRV_DECAY=30;
 const PARAM_ORDER=["techproc","cores","freq","l1","l2","l3","ram_size","ram_freq","overclock","turbo","socket"];
-const TIERS={budget:{n:"💸 Бюджет",pm:0.85,mp:1.12,dm:1.22},mid:{n:"⚖️ Средний",pm:1.00,mp:1.00,dm:1.38},flagship:{n:"👑 Флагман",pm:1.28,mp:0.93,dm:1.75}};
+const TIERS={budget:{n:"💸 Бюджет",pm:.85,mp:1.12,dm:1.22},mid:{n:"⚖️ Средний",pm:1,mp:1,dm:1.38},flagship:{n:"👑 Флагман",pm:1.28,mp:.93,dm:1.75}};
 const PARAMS={
   techproc:{n:"🔬 Техпроцесс",u:"нм",bc:25000,cm:1.18,bd:60,da:22,mn:1},
   cores:{n:"🧩 Ядра",u:"шт",bc:18000,cm:1.22,bd:45,da:18,mn:1},
@@ -109,9 +302,9 @@ const TECHS={
   driver_sdk:{n:"🖥 SDK",c:30000,d:90,desc:"Драйверы −30%",req:null}
 };
 const RAM_TYPES={
-  DRAM:{n:"DRAM",d:0,m:1.00},FPM:{n:"FPM",d:4380,m:1.10},EDO:{n:"EDO",d:7300,m:1.20},
-  SDRAM:{n:"SDRAM",d:8030,m:1.35},DDR:{n:"DDR",d:9125,m:1.55},DDR2:{n:"DDR2",d:10220,m:1.80},
-  DDR3:{n:"DDR3",d:11680,m:2.10},DDR4:{n:"DDR4",d:14235,m:2.50},DDR5:{n:"DDR5",d:16425,m:3.00}
+  DRAM:{n:"DRAM",d:0,m:1},FPM:{n:"FPM",d:4380,m:1.1},EDO:{n:"EDO",d:7300,m:1.2},
+  SDRAM:{n:"SDRAM",d:8030,m:1.35},DDR:{n:"DDR",d:9125,m:1.55},DDR2:{n:"DDR2",d:10220,m:1.8},
+  DDR3:{n:"DDR3",d:11680,m:2.1},DDR4:{n:"DDR4",d:14235,m:2.5},DDR5:{n:"DDR5",d:16425,m:3}
 };
 const CORPS=["MSI","Gigabyte","ASUS","Apple","Dell","Sony","HP","Lenovo","Acer","Nvidia"];
 const DONATE_PACKS={
@@ -123,58 +316,61 @@ const DONATE_PACKS={
 };
 const AI_NAMES=["Zenith","Nexus","Volt","Quantum","Titan","Fusion","Apex","Vertex","Prism","Orion"];
 const WK_NAMES=["Алекс","Мария","Джон","Ли","Олег","Сара","Кен","Анна","Дмитрий","Эмма","Виктор","София"];
-const NAV_ITEMS=[
-  ['menu','🏠'],['chips','📦'],['create','🚀'],['rd','🔬'],['workers','👥'],
-  ['drivers','🖥'],['shares','📊'],['contracts','📜'],['market','🛒'],
-  ['buyout','🏪'],['rank','🌍'],['top','🏆'],['news_c','🏢'],['news_g','🎮'],
-  ['msg','📩'],['help','📖'],['rules','📜'],['donate','⭐'],['settings','⚙️']
+const NAV=[
+  ["menu","🏠","Меню"],["chips","📦","Чипы"],["create","🚀","Создать"],["rd","🔬","R&D"],
+  ["workers","👥","Рабочие"],["drivers","🖥","Драйверы"],["shares","📊","Акции"],
+  ["contracts","📜","Контракты"],["market","🛒","Рынок"],["buyout","🏪","Купить"],
+  ["rank","🌍","Рейтинг"],["top","🏆","Топ"],["news_c","🏢","Новости"],["news_g","🎮","Игра"],
+  ["msg","📩","Сообщ."],["donate","⭐","Донат"],["help","📖","Справка"],["settings","⚙️","Ещё"]
 ];
-const NAV_LABELS={menu:'Меню',chips:'Чипы',create:'Создать',rd:'R&D',workers:'Рабочие',drivers:'Драйверы',shares:'Акции',contracts:'Контракты',market:'Рынок',buyout:'Купить',rank:'Рейтинг',top:'Топ',news_c:'Новости',news_g:'Игра',msg:'Сообщ.',help:'Справка',rules:'Правила',donate:'Донат',settings:'Настр.'};
 
-// ═══════ STATE ═══════
-const NEW_STATE=()=>({
-  version:VERSION,day:0,
-  player:{id:'self',company:"Silicon Forge",capital:100000,trust:50,popularity:0,
-    total_shares:10000,shares_market:5000,share_price:10.0,
-    driver_win:0,driver_lin:0,driver_mac:0,driver_day:0,
-    is_frozen:false,is_banned:false,ban_reason:"",created_day:0,stars_spent:0},
-  workers:[],free_workers:[],chips:[],research_completed:[],research_active:[],
-  contracts:[],news:[],donations:[],share_ownership:{},ai_companies:[],
-  next_chip_id:1,next_contract_id:1,next_worker_id:1,next_research_id:1,
-  last_tick:Date.now()
+const NEW=()=>({
+  version:VERSION, day:0,
+  player:{company:"Silicon Forge", capital:100000, trust:50, popularity:0,
+    total_shares:10000, shares_market:5000, share_price:10,
+    driver_win:0, driver_lin:0, driver_mac:0, driver_day:0,
+    is_frozen:false, is_banned:false, ban_reason:"", created_day:0, stars_spent:0},
+  workers:[], free_workers:[], chips:[], research_completed:[], research_active:[],
+  contracts:[], news:[], donations:[], share_ownership:{}, ai_companies:[],
+  next_chip_id:1, next_contract_id:1, next_worker_id:1, next_research_id:1, last_tick:Date.now()
 });
-let state=NEW_STATE();
-const STORAGE='tycoon_v241_full';
-function save(){try{localStorage.setItem(STORAGE,JSON.stringify(state))}catch(e){devlog('save '+e)}}
-function load(){try{const s=localStorage.getItem(STORAGE);if(!s)return false;state=Object.assign(NEW_STATE(),JSON.parse(s));return true}catch(e){return false}}
-function reset_game(){if(!confirm('Сбросить прогресс?'))return;localStorage.removeItem(STORAGE);location.reload()}
+let state=NEW();
+const KEY="tycoon_v241_ui2";
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function load(){try{const s=localStorage.getItem(KEY);if(!s)return false;state=Object.assign(NEW(),JSON.parse(s));return true}catch(e){return false}}
 
-// ═══════ ENGINE ═══════
-function safe(t){return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function fmt$(n){return '$'+Math.round(n).toLocaleString('en-US')}
-function cur_day(){return state.day}
-function fmt_date(d){if(d==null)d=state.day;const dt=new Date(GAME_START.getTime()+d*86400000);return `${dt.getDate()} ${MONTHS[dt.getMonth()]} ${dt.getFullYear()}`}
-function ram_available(d){if(d==null)d=state.day;return Object.keys(RAM_TYPES).filter(k=>d>=RAM_TYPES[k].d)}
-function ram_mult(rt){return (RAM_TYPES[rt]||{m:1}).m}
-function trust_bar(t){const g=Math.round(t/100*6);return "🟢".repeat(g)+"🔴".repeat(6-g)}
-function trust_market_mod(t){return 0.1+(t/100)*1.9}
-function pop_market_mod(p){return 1.0+Math.min(1.5,(p||0)/200.0)}
-function company_value(p){p=p||state.player;return p.capital+(p.total_shares-p.shares_market)*p.share_price}
-function driver_mult(p){p=p||state.player;return (p.driver_win*0.7+p.driver_mac*0.2+p.driver_lin*0.1)/100.0}
-function add_trust(d){const a=d>0?d*0.3:d*2.0;state.player.trust=Math.max(0.1,Math.min(99.9,state.player.trust+a))}
-function add_news(title,content,type){type=type||'company';state.news.unshift({id:Date.now()+Math.random(),title,content,type,day:state.day});if(state.news.length>80)state.news.length=80}
-function research_level(pk){return state.research_completed.filter(r=>r.tech_key==='param_'+pk).length}
-function has_tech(k){return state.research_completed.some(r=>r.tech_key===k)}
-function has_active_key(tk){return state.research_active.some(r=>r.tech_key===tk)}
-function a_techs(){return new Set(state.research_completed.map(r=>r.tech_key))}
+/* ── utils ── */
+const $=id=>document.getElementById(id);
+function safe(t){return String(t??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function fmt$(n){return "$"+Math.round(+n||0).toLocaleString("en-US")}
+function fmtDate(d=state.day){const dt=new Date(GAME_START.getTime()+d*86400000);return `${dt.getDate()} ${MONTHS[dt.getMonth()]} ${dt.getFullYear()}`}
+function ramAvail(d=state.day){return Object.keys(RAM_TYPES).filter(k=>d>=RAM_TYPES[k].d)}
+function ramMult(rt){return (RAM_TYPES[rt]||{m:1}).m}
+function trustBar(t){const g=Math.round(t/100*6);return "🟢".repeat(g)+"🔴".repeat(6-g)}
+function trustLbl(t){for(const[k,l]of[[90,"Лидер"],[70,"Высокое"],[50,"Среднее"],[30,"Низкое"],[10,"Плохое"]])if(t>=k)return l;return "Критическое"}
+function trustMod(t){return .1+(t/100)*1.9}
+function popMod(p){return 1+Math.min(1.5,(p||0)/200)}
+function companyVal(p=state.player){return p.capital+(p.total_shares-p.shares_market)*p.share_price}
+function drvMult(p=state.player){return (p.driver_win*.7+p.driver_mac*.2+p.driver_lin*.1)/100}
+function addTrust(d){const a=d>0?d*.3:d*2;state.player.trust=Math.max(.1,Math.min(99.9,state.player.trust+a))}
+function addNews(title,content,type="company"){state.news.unshift({id:Date.now()+Math.random(),title,content,type,day:state.day});if(state.news.length>80)state.news.length=80}
+function rLvl(pk){return state.research_completed.filter(r=>r.tech_key==="param_"+pk).length}
+function hasTech(k){return state.research_completed.some(r=>r.tech_key===k)}
+function hasActive(k){return state.research_active.some(r=>r.tech_key===k)}
+function techs(){return new Set(state.research_completed.map(r=>r.tech_key))}
+function toast(m,d=2400){const t=document.createElement("div");t.className="toast";t.innerHTML=m;$("toasts").appendChild(t);setTimeout(()=>t.remove(),d)}
+function modal(html){$("mdlc").innerHTML=html;$("mdl").classList.add("act")}
+function closeModal(){$("mdl").classList.remove("act")}
+function devlog(m){const el=$("dev-log");if(!el)return;const d=document.createElement("div");d.textContent=`[${new Date().toLocaleTimeString()}] ${m}`;el.appendChild(d);el.scrollTop=el.scrollHeight}
 
-function perf(c,rt){rt=rt||"DRAM";try{const tp=Math.max(1,c.techproc);return ((Math.max(1,c.cores)**0.55)*(Math.max(1,c.freq)**1.15)*(1+c.l1/64)*(1+c.l2/512)*(1+c.l3/8)*(1+(c.ram_size*Math.max(1,c.ram_freq)/32768))*(1+(c.overclock+c.turbo)/120)*(1+c.socket/800))/(tp**0.5)*ram_mult(rt)}catch(e){return 0}}
-function prod_cost(c,rt){rt=rt||"DRAM";const tp=Math.max(1,c.techproc);return Math.round(((35+c.cores*55+Math.max(0,(12000/tp)-1)*8+c.freq*0.08+c.l1*0.5+c.l2*0.3+c.l3*25+c.ram_size*500+c.ram_freq*0.04+c.overclock*30+c.turbo*35+c.socket*1.2)*(0.7+0.3*ram_mult(rt)))*100)/100}
-function p_cost(pk,lvl){return Math.floor(PARAMS[pk].bc*(PARAMS[pk].cm**lvl))}
-function p_days(pk,lvl){return Math.floor((PARAMS[pk].bd+lvl*PARAMS[pk].da)*RD_MULT)}
-function max_val_at(pk,lvl){lvl=Math.max(0,Math.floor(lvl));let v;
-  if(pk==="techproc"){v=10000;for(let i=0;i<lvl;i++)v=Math.max(1,Math.min(v*0.70,v-Math.max(1,v*0.05)));return Math.max(1,Math.round(v))}
-  if(pk==="cores"){v=1;for(let i=0;i<lvl;i++){const s=v<6?1:v<16?2:v<32?4:v<64?8:16;v+=s}return Math.min(v,256)}
+/* ── formulas ── */
+function perf(c,rt="DRAM"){try{const tp=Math.max(1,c.techproc);return ((Math.max(1,c.cores)**0.55)*(Math.max(1,c.freq)**1.15)*(1+c.l1/64)*(1+c.l2/512)*(1+c.l3/8)*(1+(c.ram_size*Math.max(1,c.ram_freq)/32768))*(1+(c.overclock+c.turbo)/120)*(1+c.socket/800))/(tp**0.5)*ramMult(rt)}catch(e){return 0}}
+function prodCost(c,rt="DRAM"){const tp=Math.max(1,c.techproc);return Math.round((35+c.cores*55+Math.max(0,(12000/tp)-1)*8+c.freq*.08+c.l1*.5+c.l2*.3+c.l3*25+c.ram_size*500+c.ram_freq*.04+c.overclock*30+c.turbo*35+c.socket*1.2)*(.7+.3*ramMult(rt))*100)/100}
+function pCost(pk,l){return Math.floor(PARAMS[pk].bc*(PARAMS[pk].cm**l))}
+function pDays(pk,l){return Math.floor((PARAMS[pk].bd+l*PARAMS[pk].da)*RD_MULT)}
+function maxValAt(pk,lvl){lvl=Math.max(0,lvl|0);let v;
+  if(pk==="techproc"){v=10000;for(let i=0;i<lvl;i++)v=Math.max(1,Math.min(v*.7,v-Math.max(1,v*.05)));return Math.max(1,Math.round(v))}
+  if(pk==="cores"){v=1;for(let i=0;i<lvl;i++)v+=(v<6?1:v<16?2:v<32?4:v<64?8:16);return Math.min(v,256)}
   if(pk==="freq"){v=1;for(let i=0;i<lvl;i++)v=Math.max(v+1,v*1.85);return Math.min(Math.round(v),100000)}
   if(pk==="l1"){v=8;for(let i=0;i<lvl;i++)v+=(v<32?8:v<128?16:32);return Math.min(v,2048)}
   if(pk==="l2"){v=64;for(let i=0;i<lvl;i++)v+=(v<512?64:v<2048?128:256);return Math.min(v,65536)}
@@ -183,833 +379,394 @@ function max_val_at(pk,lvl){lvl=Math.max(0,Math.floor(lvl));let v;
   if(pk==="ram_freq"){v=400;for(let i=0;i<lvl;i++)v=Math.max(v+100,v*1.25);return Math.min(Math.round(v),10000)}
   if(pk==="overclock"||pk==="turbo")return Math.min(lvl*5,100);
   if(pk==="socket"){v=8;for(let i=0;i<lvl;i++)v+=(v<64?8:v<128?16:24);return Math.min(v,4096)}
-  return (PARAMS[pk]||{mn:1}).mn}
-function tech_cores_cap(tp){return Math.max(1,Math.min(256,Math.round(18000/(Math.max(1,tp)**0.85))))}
-function tech_freq_cap(tp){return Math.max(1,Math.min(100000,Math.round(120000/(Math.max(1,tp)**0.95))))}
-function max_val(pk,lc){let lvl,tpl,scl;
-  if(lc){lvl=lc[pk]||0;tpl=lc.techproc||0;scl=lc.socket||0}
-  else{lvl=research_level(pk);tpl=pk!=="techproc"?research_level("techproc"):lvl;scl=pk!=="socket"?research_level("socket"):lvl}
-  let v=max_val_at(pk,lvl);const tp=max_val_at("techproc",tpl);
-  if(pk==="cores")v=Math.min(v,tech_cores_cap(tp),Math.max(1,Math.floor(max_val_at("socket",scl)/4)));
-  else if(pk==="freq")v=Math.min(v,tech_freq_cap(tp));
-  else if(pk==="l3")v=Math.min(v,Math.max(1,Math.floor(tech_cores_cap(tp)/2)));
+  return PARAMS[pk]?.mn||1}
+function coresCap(tp){return Math.max(1,Math.min(256,Math.round(18000/(Math.max(1,tp)**0.85))))}
+function freqCap(tp){return Math.max(1,Math.min(100000,Math.round(120000/(Math.max(1,tp)**0.95))))}
+function maxVal(pk,lc){let lvl,tpl,sl;
+  if(lc){lvl=lc[pk]||0;tpl=lc.techproc||0;sl=lc.socket||0}
+  else{lvl=rLvl(pk);tpl=pk!=="techproc"?rLvl("techproc"):lvl;sl=pk!=="socket"?rLvl("socket"):lvl}
+  let v=maxValAt(pk,lvl);const tp=maxValAt("techproc",tpl);
+  if(pk==="cores")v=Math.min(v,coresCap(tp),Math.max(1,Math.floor(maxValAt("socket",sl)/4)));
+  else if(pk==="freq")v=Math.min(v,freqCap(tp));
+  else if(pk==="l3")v=Math.min(v,Math.max(1,Math.floor(coresCap(tp)/2)));
   else if(pk==="overclock"){if(tp>=3000)v=Math.min(v,15);else if(tp>=1000)v=Math.min(v,35);else if(tp>=100)v=Math.min(v,60)}
   else if(pk==="turbo"){if(tp>=3000)v=Math.min(v,10);else if(tp>=1000)v=Math.min(v,30);else if(tp>=100)v=Math.min(v,55)}
   return Math.max(PARAMS[pk].mn,Math.floor(v))}
-function next_val_preview(pk){const l={};PARAM_ORDER.forEach(p=>l[p]=research_level(p));l[pk]=(l[pk]||0)+1;return max_val(pk,l)}
-function tech_name(k){if(k in TECHS)return TECHS[k].n;if(k.startsWith('param_'))return (PARAMS[k.slice(6)]||{n:k}).n;return k}
-function mkt_boost(t){t=Math.max(0,Math.floor(t||0));return t<=0?1.0:Math.min(3.0,1.5+t/100.0)}
-function worker_eff(){const ws=state.workers;if(!ws.length)return 0;return (ws.reduce((a,w)=>a+w.skill,0)/5.0)*Math.min(1.0,ws.length/5.0)}
-function worker_txt(){const ws=state.workers;if(!ws.length)return "🚫 Нет сотрудников";const c=ws.length;const m={1:"0.20x",2:"0.40x",3:"0.60x",4:"0.80x"}[c]||"1.00x";const s=(ws.reduce((a,w)=>a+w.skill,0)/c).toFixed(1);const l=Math.round(ws.reduce((a,w)=>a+w.loyalty,0)/c);return `👥${c} 🎓${s} ❤️${l}% ${m}`}
-function chk_mistake(){const cnt=state.workers.length;const eff=worker_eff();const t=a_techs();
-  if(cnt===0)return [true,(Math.random()*1700+800)*(t.has('logistics')?0.5:1)];
-  const sk=state.workers.reduce((a,w)=>a+w.skill,0)/cnt;
-  const loy=state.workers.reduce((a,w)=>a+w.loyalty,0)/cnt;
-  let ch=Math.max(5,35-sk*6*eff-loy*0.25*eff);
-  if(t.has('qc'))ch*=0.6;
-  if(Math.random()*100<ch){let p=(Math.random()*2900+600)*(1.2/Math.max(1,sk*eff));p*=(t.has('logistics')?0.5:1);return [true,Math.round(p*100)/100]}
-  return [false,0]}
-function seed_free_workers(){while(state.free_workers.length<10){const n=WK_NAMES[Math.floor(Math.random()*WK_NAMES.length)];state.free_workers.push({worker_id:state.next_worker_id++,name:`${n} ${Math.floor(Math.random()*90)+10}`,skill:Math.floor(Math.random()*3)+1,loyalty:Math.floor(Math.random()*36)+50,salary:Math.round((Math.floor(Math.random()*3)+1)*900+Math.random()*400-150)})}}
-function seed_ai(){while(state.ai_companies.length<8){const n=`${AI_NAMES[Math.floor(Math.random()*AI_NAMES.length)]} ${["Corp","Inc","Tech","Labs"][Math.floor(Math.random()*4)]}`;state.ai_companies.push({id:'ai_'+Date.now()+'_'+Math.floor(Math.random()*99999),company_name:n,capital:Math.random()*3000000+300000,total_shares:10000,shares_market:Math.floor(Math.random()*4000)+3000,share_price:Math.random()*40+5,trust:Math.random()*60+30,popularity:Math.floor(Math.random()*100),chips:[],created_day:state.day})}}
-function gen_ai_chip(ai){const type=Math.random()>0.5?'CPU':'GPU';const tier=['budget','mid','flagship'][Math.floor(Math.random()*3)];const cores=[1,2,4,6,8,12,16][Math.floor(Math.random()*7)];const freq=Math.floor(Math.random()*3000)+500;const tp=[10000,5000,2000,800,300,90,45,22][Math.floor(Math.random()*8)];const c={cores,techproc:tp,freq,l1:32,l2:256,l3:2,ram_size:4,ram_freq:1600,overclock:0,turbo:0,socket:16};const cost=prod_cost(c,'DDR2');return {chip_id:'ai_'+Date.now()+'_'+Math.floor(Math.random()*99999),chip_name:`${ai.company_name.split(' ')[0]}-${Math.floor(Math.random()*999)}`,chip_type:type,chip_tier:tier,cost,cores,techproc:tp,freq,l1:32,l2:256,l3:2,ram_size:4,ram_freq:1600,overclock:0,turbo:0,socket:16,ram_type:'DDR2',sell_price:Math.round(cost*TIERS[tier].dm),for_sale:1,marketing_ticks:0,contract_id:0,created_day:state.day,owner:ai.id,owner_name:ai.company_name}}
+function nextVal(pk){const l={};PARAM_ORDER.forEach(p=>l[p]=rLvl(p));l[pk]=(l[pk]||0)+1;return maxVal(pk,l)}
+function techName(k){if(TECHS[k])return TECHS[k].n;if(k.startsWith("param_"))return (PARAMS[k.slice(6)]||{n:k}).n;return k}
+function mktBoost(t){t=Math.max(0,t|0);return t<=0?1:Math.min(3,1.5+t/100)}
+function wEff(){const w=state.workers;if(!w.length)return 0;return (w.reduce((a,x)=>a+x.skill,0)/5)*Math.min(1,w.length/5)}
+function wTxt(){const w=state.workers;if(!w.length)return "🚫 Нет сотрудников";const c=w.length;const m={1:"0.20x",2:"0.40x",3:"0.60x",4:"0.80x"}[c]||"1.00x";return `👥${c} 🎓${(w.reduce((a,x)=>a+x.skill,0)/c).toFixed(1)} ❤️${Math.round(w.reduce((a,x)=>a+x.loyalty,0)/c)}% ${m}`}
+function chkMistake(){const n=state.workers.length,e=wEff(),T=techs();
+  if(!n)return[true,(Math.random()*1700+800)*(T.has("logistics")?.5:1)];
+  const sk=state.workers.reduce((a,w)=>a+w.skill,0)/n,lo=state.workers.reduce((a,w)=>a+w.loyalty,0)/n;
+  let ch=Math.max(5,35-sk*6*e-lo*.25*e);if(T.has("qc"))ch*=.6;
+  if(Math.random()*100<ch)return[true,Math.round((Math.random()*2900+600)*(1.2/Math.max(1,sk*e))*(T.has("logistics")?.5:1)*100)/100];
+  return[false,0]}
+function seedWorkers(){while(state.free_workers.length<10){const n=WK_NAMES[Math.random()*WK_NAMES.length|0];state.free_workers.push({worker_id:state.next_worker_id++,name:`${n} ${10+Math.random()*90|0}`,skill:1+Math.random()*3|0,loyalty:50+Math.random()*36|0,salary:Math.round((1+Math.random()*3|0)*900+Math.random()*400-150)})}}
+function seedAI(){while(state.ai_companies.length<8){const n=`${AI_NAMES[Math.random()*AI_NAMES.length|0]} ${["Corp","Inc","Tech","Labs"][Math.random()*4|0]}`;state.ai_companies.push({id:"ai_"+Date.now()+"_"+Math.random()*1e5|0,company_name:n,capital:3e5+Math.random()*3e6,total_shares:10000,shares_market:3000+Math.random()*4000|0,share_price:5+Math.random()*40,trust:30+Math.random()*60,popularity:Math.random()*100|0,chips:[],created_day:state.day})}}
+function genAIChip(ai){const type=Math.random()>.5?"CPU":"GPU",tier=["budget","mid","flagship"][Math.random()*3|0],cores=[1,2,4,6,8,12,16][Math.random()*7|0],freq=500+Math.random()*3000|0,tp=[10000,5000,2000,800,300,90,45,22][Math.random()*8|0];const c={cores,techproc:tp,freq,l1:32,l2:256,l3:2,ram_size:4,ram_freq:1600,overclock:0,turbo:0,socket:16};const cost=prodCost(c,"DDR2");return{chip_id:"ai_"+Date.now()+"_"+Math.random()*1e5|0,chip_name:`${ai.company_name.split(" ")[0]}-${Math.random()*999|0}`,chip_type:type,chip_tier:tier,cost,...c,ram_type:"DDR2",sell_price:Math.round(cost*TIERS[tier].dm),for_sale:1,marketing_ticks:0,contract_id:0,created_day:state.day,owner:ai.id,owner_name:ai.company_name}}
 
-// ═══════ TICKER ═══════
-let prev_ram=new Set();
-function check_ram_unlocks(cd){const now=new Set(ram_available(cd));const nw=[...now].filter(x=>!prev_ram.has(x));if(nw.length&&prev_ram.size>0){for(const rt of nw){add_news(`🧠 ${RAM_TYPES[rt].n}`,`Разблокирован новый тип памяти! ×${RAM_TYPES[rt].m.toFixed(2)}`,'game');toast(`🎮 Разблокировано: ${RAM_TYPES[rt].n}`)}}prev_ram=now}
-
+/* ── ticker ── */
+let prevRam=new Set();
 function tick(cd){
-  const p=state.player;
-  if(p.is_frozen||p.is_banned)return [];
-  const notif=[];
-  // driver decay
+  const p=state.player,notif=[];
+  if(p.is_frozen||p.is_banned)return notif;
   if(cd-(p.driver_day||0)>=DRV_DECAY){p.driver_win=Math.max(0,p.driver_win-5);p.driver_lin=Math.max(0,p.driver_lin-5);p.driver_mac=Math.max(0,p.driver_mac-5);p.driver_day=cd}
-  // research
   const done=state.research_active.filter(r=>r.finish_day<=cd);
-  for(const r of done){
-    state.research_completed.push({id:r.id,tech_key:r.tech_key,finish_day:cd});
-    let desc='';
-    if(r.tech_key.startsWith('param_')){desc=`→ ${max_val(r.tech_key.slice(6)).toLocaleString()}`}
-    notif.push(`🔬 ${tech_name(r.tech_key)} ${desc}`);
-    add_news(`🔬 ${tech_name(r.tech_key)}`,`Исследование завершено ${desc}`,'company');
-  }
+  for(const r of done){state.research_completed.push({id:r.id,tech_key:r.tech_key,finish_day:cd});let d="";if(r.tech_key.startsWith("param_"))d=`→ ${maxVal(r.tech_key.slice(6)).toLocaleString()}`;notif.push(`🔬 ${techName(r.tech_key)} ${d}`);addNews(`🔬 ${techName(r.tech_key)}`,`Завершено ${d}`,"company")}
   state.research_active=state.research_active.filter(r=>r.finish_day>cd);
-  // chip sales
+  // sales
   const sale=state.chips.filter(c=>c.for_sale&&c.sell_price>0&&!c.contract_id);
   if(sale.length){
-    const t=a_techs();const pc=state.ai_companies.length+1;
-    const tmu=Math.max(2.0,pc*(Math.random()*2.0+0.8));
-    const tm=trust_market_mod(p.trust);const pm=pop_market_mod(p.popularity);const drv=driver_mult(p);
-    for(const tn of ['budget','mid','flagship']){
+    const T=techs(),tmu=Math.max(2,(state.ai_companies.length+1)*(Math.random()*2+.8));
+    const tm=trustMod(p.trust),pm=popMod(p.popularity),drv=drvMult(p);
+    for(const tn of ["budget","mid","flagship"]){
       const tc=sale.filter(c=>c.chip_tier===tn);if(!tc.length)continue;
-      const sh={budget:60,mid:30,flagship:10}[tn]/100;
-      const ttmu=tmu*sh*5;
-      const cvs=[];
-      for(const c of tc){
-        const pv=perf(c,c.ram_type);const pr=Math.max(1.0,c.sell_price);
-        let vs=(pv/pr)*TIERS[tn].mp;
-        const age=Math.max(0,cd-(c.created_day||0));
-        vs*=Math.max(0,1-age/CHIP_LIFETIME);
-        vs*=tm*(0.1+drv*0.9)*pm;
-        vs*=(t.has('marketing_tech')?1.5:1)*(1+Math.min(1,(c.marketing_ticks||0)/200));
-        if(p.capital>50e6)vs*=0.6;else if(p.capital>10e6)vs*=0.8;
-        cvs.push({c,value:Math.max(vs,1e-4),mkt:c.marketing_ticks||0,price:pr,cost:c.cost});
-      }
-      const tv=cvs.reduce((a,v)=>a+v.value,0)||1;
-      for(const v of cvs){
-        let u=Math.floor(ttmu*(v.value/tv)*mkt_boost(v.mkt));
-        if(v.mkt>0&&u<2)u=2+Math.floor(v.mkt/50);
-        if(u<=0){if(v.mkt>0)v.c.marketing_ticks=Math.max(0,v.mkt-1);continue}
-        const rev=Math.round(u*Math.max(0,v.price-v.cost)*100)/100;
-        v.c.lifetime_profit=(v.c.lifetime_profit||0)+rev;
-        v.c.sales_total=(v.c.sales_total||0)+u;
-        v.c.stock=u;
-        v.c.marketing_ticks=Math.max(0,v.mkt-1);
-        if(rev>0){p.capital+=rev;p.trust=Math.max(0.1,Math.min(99.9,p.trust+0.3));if(v.mkt>0)p.popularity=Math.min(500,p.popularity+0.15)}
-      }
+      const ttmu=tmu*({budget:60,mid:30,flagship:10}[tn]/100)*5;
+      const cvs=tc.map(c=>{const pr=Math.max(1,c.sell_price);let vs=(perf(c,c.ram_type)/pr)*TIERS[tn].mp;const age=Math.max(0,cd-(c.created_day||0));vs*=Math.max(0,1-age/CHIP_LIFETIME)*tm*(.1+drv*.9)*pm*(T.has("marketing_tech")?1.5:1)*(1+Math.min(1,(c.marketing_ticks||0)/200));if(p.capital>50e6)vs*=.6;else if(p.capital>10e6)vs*=.8;return{c,value:Math.max(vs,1e-4),mkt:c.marketing_ticks||0,price:pr,cost:c.cost}});
+      const tv=cvs.reduce((a,x)=>a+x.value,0)||1;
+      for(const v of cvs){let u=Math.floor(ttmu*(v.value/tv)*mktBoost(v.mkt));if(v.mkt>0&&u<2)u=2+(v.mkt/50|0);if(u<=0){if(v.mkt>0)v.c.marketing_ticks=Math.max(0,v.mkt-1);continue}const rev=Math.round(u*Math.max(0,v.price-v.cost)*100)/100;v.c.lifetime_profit=(v.c.lifetime_profit||0)+rev;v.c.sales_total=(v.c.sales_total||0)+u;v.c.marketing_ticks=Math.max(0,v.mkt-1);if(rev>0){p.capital+=rev;p.trust=Math.min(99.9,p.trust+.3);if(v.mkt>0)p.popularity=Math.min(500,p.popularity+.15)}}
     }
   }
-  // popularity decay
   if(cd>0&&cd%7===0&&p.popularity>0)p.popularity=Math.max(0,p.popularity-1);
-  // share price
-  const np=p.capital>0?p.share_price*0.85+(Math.max(0.1,p.capital/10000)*Math.max(0.2,1-(p.shares_market/Math.max(1,p.total_shares))*0.35))*0.15:0.01;
-  p.share_price=Math.max(0.01,Math.round(np*100)/100);
-  // AI update
-  for(const ai of state.ai_companies){
-    ai.capital+=ai.capital*0.001*(Math.random()-0.3);
-    ai.share_price=Math.max(0.5,ai.share_price*(0.98+Math.random()*0.04));
-    ai.popularity=Math.max(0,Math.min(300,ai.popularity+(Math.random()-0.5)*2));
-    if(Math.random()<0.15&&ai.chips.length<4)ai.chips.push(gen_ai_chip(ai));
-    ai.chips=ai.chips.filter(c=>(cd-c.created_day)<300);
-  }
-  // corp contracts
-  if(cd>0&&cd%5===0){
-    const pc=state.contracts.filter(c=>c.sender_id===0&&c.status==='PENDING').length;
-    if(pc<3){
-      for(let i=0;i<3-pc;i++){
-        const corp=CORPS[Math.floor(Math.random()*CORPS.length)];
-        const ct=Math.random()>0.5?"CPU":"GPU";
-        const amt=Math.floor(Math.random()*13)+3;
-        const rw=amt*(Math.floor(Math.random()*15001)+5000);
-        const pn=Math.floor(rw*0.5);
-        const dur=Math.floor(Math.random()*91)+30;
-        state.contracts.push({id:state.next_contract_id++,sender_id:0,receiver_id:'self',template_key:`deliver_${ct.toLowerCase()}`,chip_type:ct,amount:amt,reward:rw,penalty:pn,duration:dur,started_day:cd,finish_day:cd+dur,delivered:0,status:'PENDING',extra_text:corp});
-      }
-    }
-  }
-  // active contracts delivery
-  for(const c of state.contracts){
-    if(c.status!=='ACTIVE')continue;
-    if(!['deliver_cpu','deliver_gpu'].includes(c.template_key))continue;
-    const need=c.template_key==='deliver_cpu'?'CPU':'GPU';
-    const left=c.amount-c.delivered;
-    if(left<=0)continue;
-    const avail=state.chips.filter(ch=>ch.chip_type===need&&!ch.contract_id&&!ch.for_sale);
-    const take=avail.slice(0,left);
-    for(const ch of take){state.chips=state.chips.filter(x=>x.chip_id!==ch.chip_id)}
-    c.delivered+=take.length;
-    if(take.length>0)notif.push(`📦 #${c.id} ${c.delivered}/${c.amount}`);
-    if(c.delivered>=c.amount){c.status='COMPLETED';p.capital+=c.reward*2;add_trust(3);notif.push(`✅ #${c.id} +${fmt$(c.reward*2)}`);add_news(`✅ Контракт #${c.id}`,`Выполнен, +${fmt$(c.reward*2)}`,'company')}
-  }
-  // failed
-  for(const c of state.contracts){
-    if(c.status!=='ACTIVE')continue;
-    if(!['deliver_cpu','deliver_gpu'].includes(c.template_key))continue;
-    if(cd>=c.finish_day&&c.delivered<c.amount){
-      c.status='FAILED';let pen=c.penalty;if(a_techs().has('logistics'))pen*=0.5;
-      p.capital-=pen;add_trust(-5);notif.push(`❌ #${c.id} −${fmt$(pen)}`);
-      add_news(`❌ Контракт #${c.id}`,`Провал, штраф ${fmt$(pen)}`,'company');
-    }
-  }
-  // taxes monthly
-  if(cd>0&&cd%30===0&&p.capital>0){
-    const pay=state.workers.reduce((a,w)=>a+w.salary,0);
-    const pt=pay*0.2;let wt=0;
-    if(p.capital>50e6)wt=p.capital*0.12;
-    else if(p.capital>10e6)wt=p.capital*0.08;
-    else if(p.capital>2e6)wt=p.capital*0.04;
-    else if(p.capital>5e5)wt=p.capital*0.015;
-    const tot=Math.round((pt+wt)*100)/100;
-    if(tot>0){p.capital=Math.max(0,p.capital-tot);notif.push(`🏛 −${fmt$(tot)} (ЗП+налоги)`);add_news(`🏛 Налоги/ЗП`,`Списано ${fmt$(tot)}`,'company')}
-    if(p.capital<=0){add_news(`🏚️ ${p.company}`,`Банкротство`,'company');notif.push(`🏚️ БАНКРОТ`);state.chips=[];state.research_active=[];state.contracts=[];state.workers=[];state.share_ownership={};p.capital=0}
-  }
-  if(state.free_workers.length<5)seed_free_workers();
-  save();
-  return notif;
+  const np=p.capital>0?p.share_price*.85+(Math.max(.1,p.capital/10000)*Math.max(.2,1-(p.shares_market/Math.max(1,p.total_shares))*.35))*.15:.01;
+  p.share_price=Math.max(.01,Math.round(np*100)/100);
+  for(const ai of state.ai_companies){ai.capital+=ai.capital*.001*(Math.random()-.3);ai.share_price=Math.max(.5,ai.share_price*(.98+Math.random()*.04));if(Math.random()<.15&&ai.chips.length<4)ai.chips.push(genAIChip(ai));ai.chips=ai.chips.filter(c=>cd-c.created_day<300)}
+  if(cd>0&&cd%5===0){const pc=state.contracts.filter(c=>c.sender_id===0&&c.status==="PENDING").length;for(let i=0;i<Math.max(0,3-pc);i++){const ct=Math.random()>.5?"CPU":"GPU",amt=3+Math.random()*13|0,rw=amt*(5000+Math.random()*15000|0);state.contracts.push({id:state.next_contract_id++,sender_id:0,receiver_id:"self",template_key:`deliver_${ct.toLowerCase()}`,chip_type:ct,amount:amt,reward:rw,penalty:Math.floor(rw*.5),duration:30+Math.random()*91|0,started_day:cd,finish_day:cd+(30+Math.random()*91|0),delivered:0,status:"PENDING",extra_text:CORPS[Math.random()*CORPS.length|0]})}}
+  for(const c of state.contracts){if(c.status!=="ACTIVE"||!["deliver_cpu","deliver_gpu"].includes(c.template_key))continue;const need=c.template_key==="deliver_cpu"?"CPU":"GPU",left=c.amount-c.delivered;if(left<=0)continue;const take=state.chips.filter(ch=>ch.chip_type===need&&!ch.contract_id&&!ch.for_sale).slice(0,left);for(const ch of take)state.chips=state.chips.filter(x=>x.chip_id!==ch.chip_id);c.delivered+=take.length;if(take.length)notif.push(`📦 #${c.id} ${c.delivered}/${c.amount}`);if(c.delivered>=c.amount){c.status="COMPLETED";p.capital+=c.reward*2;addTrust(3);notif.push(`✅ #${c.id} +${fmt$(c.reward*2)}`);addNews(`✅ Контракт #${c.id}`,`+${fmt$(c.reward*2)}`,"company")}}
+  for(const c of state.contracts){if(c.status!=="ACTIVE"||!["deliver_cpu","deliver_gpu"].includes(c.template_key))continue;if(cd>=c.finish_day&&c.delivered<c.amount){c.status="FAILED";let pen=c.penalty;if(techs().has("logistics"))pen*=.5;p.capital-=pen;addTrust(-5);notif.push(`❌ #${c.id} −${fmt$(pen)}`)}}
+  if(cd>0&&cd%30===0&&p.capital>0){const pay=state.workers.reduce((a,w)=>a+w.salary,0);let wt=0;if(p.capital>50e6)wt=p.capital*.12;else if(p.capital>10e6)wt=p.capital*.08;else if(p.capital>2e6)wt=p.capital*.04;else if(p.capital>5e5)wt=p.capital*.015;const tot=Math.round((pay*.2+wt)*100)/100;if(tot>0){p.capital=Math.max(0,p.capital-tot);notif.push(`🏛 −${fmt$(tot)}`)}}
+  if(state.free_workers.length<5)seedWorkers();
+  const now=new Set(ramAvail(cd));if(prevRam.size){for(const rt of [...now].filter(x=>!prevRam.has(x))){addNews(`🧠 ${RAM_TYPES[rt].n}`,`×${RAM_TYPES[rt].m.toFixed(2)}`,"game");notif.push(`🎮 ${RAM_TYPES[rt].n}`)}}prevRam=now;
+  save();return notif;
 }
 
-// ═══════ UI HELPERS ═══════
-const $=id=>document.getElementById(id);
-function toast(msg,dur){dur=dur||2500;const w=$('toasts');const t=document.createElement('div');t.className='toast';t.innerHTML=msg;w.appendChild(t);setTimeout(()=>t.remove(),dur)}
-function modal(html){$('mdlc').innerHTML=html;$('mdl').classList.add('act')}
-function close_modal(){$('mdl').classList.remove('act')}
-function devlog(m){const el=$('dev-log');if(!el)return;const d=document.createElement('div');d.textContent=`[${new Date().toLocaleTimeString()}] ${m}`;el.appendChild(d);el.scrollTop=el.scrollHeight;while(el.children.length>60)el.removeChild(el.firstChild)}
-
-// ═══════ ROUTER ═══════
-let current_screen='menu';
-function nav(scr){current_screen=scr;update_nav();render();update_header()}
-function update_nav(){const n=$('nav');n.innerHTML=NAV_ITEMS.map(([id,ico])=>`<button class="nb ${current_screen===id?'act':''}" onclick="nav('${id}')">${ico} ${NAV_LABELS[id]}</button>`).join('')}
-function update_header(){
+/* ── router ── */
+let SCR="menu";
+function nav(s){SCR=s;render();header()}
+function header(){
   const p=state.player;
-  $('ui-c').textContent=p.company;
-  $('ui-d').textContent=`📅 ${fmt_date()}`;
-  $('ui-cap').textContent=`💵 ${fmt$(p.capital)}`;
-  $('ui-t').textContent=`🛡 ${p.trust.toFixed(1)}%`;
-  $('ui-p').textContent=`📣 ${Math.floor(p.popularity)}`;
-  $('ui-day').textContent=`День ${state.day}`;
-  $('ui-drv').textContent=`🖥 ×${driver_mult(p).toFixed(2)}`;
+  $("ui-c").textContent=p.company||"—";
+  $("ui-d").textContent=`📅 ${fmtDate()}`;
+  $("ui-cap").textContent=`💵 ${fmt$(p.capital)}`;
+  $("ui-t").textContent=`🛡 ${p.trust.toFixed(1)}%`;
+  $("ui-p").textContent=`📣 ${Math.floor(p.popularity)}`;
+  $("ui-day").textContent=`День ${state.day}`;
+  $("ui-drv").textContent=`🖥 ×${drvMult(p).toFixed(2)}`;
 }
+function paintNav(){
+  $("nav").innerHTML=NAV.map(([id,ico,lab])=>`<button class="nb ${SCR===id?"act":""}" onclick="nav('${id}')"><span class="ico">${ico}</span>${lab}</button>`).join("");
+}
+function h(html){$("content").innerHTML=html;$("content").scrollTop=0}
 function render(){
-  const main=$('content');main.innerHTML='';
+  paintNav();header();
   const p=state.player;
-  if(p.is_frozen&&current_screen!=='settings'){main.innerHTML=`<div class="card" style="text-align:center;padding:30px"><h3>❄️ Заморожено</h3><p class="muted">Игра на паузе</p><button class="btn pri" style="margin-top:12px" onclick="toggle_freeze()">🔥 Разморозить</button></div>`;return}
-  const R={menu,chips:s_chips,create:s_create,rd:s_rd,workers:s_workers,drivers:s_drivers,shares:s_shares,contracts:s_contracts,market:s_market,buyout:s_buyout,rank:s_rank,top:s_top,news_c:()=>s_news('company'),news_g:()=>s_news('game'),msg:s_msg,help:s_help,rules:s_rules,donate:s_donate,settings:s_settings};
-  (R[current_screen]||menu)();
+  if(p.is_banned){h(`<div class="card"><div class="val">🚫 ${safe(p.ban_reason||"Бан")}</div></div>`);return}
+  if(p.is_frozen&&SCR!=="settings"){h(`<div class="card" style="text-align:center;padding:28px"><div class="val">❄️ Заморожено</div><div class="sub">Тикер на паузе</div><button class="btn pri" style="margin-top:12px" onclick="toggleFreeze()">🔥 Разморозить</button></div>`);return}
+  ({menu:sMenu,chips:sChips,create:sCreate,rd:sRD,workers:sWorkers,drivers:sDrivers,shares:sShares,contracts:sContracts,market:sMarket,buyout:sBuyout,rank:sRank,top:sTop,news_c:()=>sNews("company"),news_g:()=>sNews("game"),msg:sMsg,donate:sDonate,help:sHelp,settings:sSettings}[SCR]||sMenu)();
 }
-function h(html){$('content').innerHTML=html}
 
-// ═══════ SCREEN: MENU ═══════
-function menu(){
-  const p=state.player;const cv=company_value(p);const owned=Object.values(state.share_ownership).reduce((a,b)=>a+b,0);
-  const cc=state.chips.length;const scc=state.chips.filter(c=>c.for_sale).length;
-  const mc=state.contracts.filter(c=>c.status==='PENDING'&&c.receiver_id===p.id).length;
-  const tp=max_val('techproc'),cores=max_val('cores'),freq=max_val('freq');
-  const rda=state.research_active.length;
-  const tt=p.capital>50e6?'12%':p.capital>10e6?'8%':p.capital>2e6?'4%':p.capital>5e5?'1.5%':'0%';
+/* ════════ SCREENS ════════ */
+function sMenu(){
+  const p=state.player,cv=companyVal(p),owned=Object.values(state.share_ownership).reduce((a,b)=>a+b,0);
+  const cc=state.chips.length,scc=state.chips.filter(c=>c.for_sale).length;
+  const mc=state.contracts.filter(c=>c.status==="PENDING").length;
+  const tp=maxVal("techproc"),cores=maxVal("cores"),freq=maxVal("freq");
+  const tax=p.capital>50e6?"12%":p.capital>10e6?"8%":p.capital>2e6?"4%":p.capital>5e5?"1.5%":"0%";
   h(`
-    <div class="card"><div class="lbl">🏢 Компания</div><div class="val">${safe(p.company)} <span class="muted">v${VERSION}</span></div></div>
-    <div class="card"><div class="lbl">Доверие</div><div class="val">${p.trust.toFixed(1)}/100 ${trust_bar(p.trust)}</div></div>
-    <div class="card"><div class="lbl">Популярность</div><div class="val">📣 ${Math.floor(p.popularity)} <span class="muted">(×${pop_market_mod(p.popularity).toFixed(2)})</span></div></div>
-    <div class="card"><div class="lbl">Технологии</div><div class="val">🔬 ${tp}нм · 🧩${cores} · ⚡${freq}МГц</div></div>
-    <div class="card"><div class="lbl">Финансы</div><div class="val">${fmt$(p.capital)} <span class="muted">| Стоим. ${fmt$(cv)}</span></div><div class="muted">Налог: ${tt} · Акция: $${p.share_price.toFixed(2)}</div></div>
-    <div class="card"><div class="lbl">Акции</div><div class="val">${(p.total_shares-p.shares_market).toLocaleString()}/${p.shares_market.toLocaleString()}/${p.total_shares.toLocaleString()}</div><div class="muted">В чужих: ${owned.toLocaleString()}</div></div>
-    <div class="card"><div class="lbl">Ресурсы</div><div class="val">📦${cc} 🛒${scc} 📩${mc} 🔬${rda}</div><div class="muted">${worker_txt()}</div></div>
-    <div class="g2">
-      <button class="btn pri" onclick="nav('create')">🚀 Создать чип</button>
-      <button class="btn" onclick="nav('chips')">📦 Мои чипы</button>
-      <button class="btn" onclick="nav('rd')">🔬 R&D</button>
-      <button class="btn" onclick="nav('workers')">👥 Рабочие</button>
-      <button class="btn" onclick="nav('drivers')">🖥 Драйверы</button>
-      <button class="btn" onclick="nav('shares')">📊 Акции</button>
-      <button class="btn" onclick="nav('contracts')">📜 Контракты</button>
-      <button class="btn" onclick="nav('market')">🛒 Рынок</button>
-      <button class="btn" onclick="nav('buyout')">🏪 Купить компанию</button>
-      <button class="btn" onclick="nav('msg')">📩 Сообщения (${mc})</button>
-    </div>
-  `);
+  <div class="card"><div class="lbl">🏢 Компания</div><div class="val">${safe(p.company)}</div><div class="sub">⭐ v${VERSION} · 📅 ${fmtDate()}</div></div>
+  <div class="card"><div class="lbl">🛡 Доверие — ${trustLbl(p.trust)}</div><div class="val">${p.trust.toFixed(1)}/100</div><div class="sub">${trustBar(p.trust)}</div><div class="prog"><div class="pbar" style="width:${p.trust}%"></div></div></div>
+  <div class="card"><div class="lbl">📣 Популярность</div><div class="val">${Math.floor(p.popularity)} <span class="sub">×${popMod(p.popularity).toFixed(2)}</span></div></div>
+  <div class="card"><div class="lbl">🔬 Технологии</div><div class="val">${tp}нм · 🧩${cores} · ⚡${freq}МГц</div></div>
+  <div class="card"><div class="lbl">💵 Финансы</div><div class="val">${fmt$(p.capital)}</div><div class="sub">Стоимость ${fmt$(cv)} · Налог ${tax} · Акция $${p.share_price.toFixed(2)}</div></div>
+  <div class="card"><div class="lbl">📊 Акции</div><div class="val">${(p.total_shares-p.shares_market).toLocaleString()} / ${p.shares_market.toLocaleString()} / ${p.total_shares.toLocaleString()}</div><div class="sub">В чужих компаниях: ${owned.toLocaleString()}</div></div>
+  <div class="card"><div class="lbl">📦 Ресурсы</div><div class="val">Чипы ${cc} · В продаже ${scc} · 📩${mc}</div><div class="sub">${wTxt()} · R&D ${state.research_active.length}</div></div>
+  <div class="g2">
+    <button class="btn pri" onclick="nav('create')">🚀 Создать</button>
+    <button class="btn" onclick="nav('chips')">📦 Чипы</button>
+    <button class="btn" onclick="nav('rd')">🔬 R&D</button>
+    <button class="btn" onclick="nav('workers')">👥 Рабочие</button>
+    <button class="btn" onclick="nav('drivers')">🖥 Драйверы</button>
+    <button class="btn" onclick="nav('shares')">📊 Акции</button>
+    <button class="btn" onclick="nav('contracts')">📜 Контракты</button>
+    <button class="btn" onclick="nav('market')">🛒 Рынок</button>
+    <button class="btn" onclick="nav('buyout')">🏪 Купить</button>
+    <button class="btn" onclick="nav('msg')">📩 Сообщения (${mc})</button>
+  </div>`);
 }
 
-// ═══════ CHIPS ═══════
-function s_chips(){
-  let html=`<button class="btn pri" onclick="nav('create')">🚀 Создать новый чип</button><h3>Мои чипы (${state.chips.length})</h3>`;
-  if(!state.chips.length){h(html+`<div class="card">Нет чипов. Создайте первый!</div>`);return}
-  state.chips.forEach(c=>{
-    const st=c.contract_id?'📜':(c.for_sale?'🛒':'💤');
-    const ic=c.chip_type==='CPU'?'💻':'🎮';
-    const ads=c.marketing_ticks?` 📢${c.marketing_ticks}`:'';
-    html+=`<div class="card" onclick="chip_detail(${c.chip_id})" style="cursor:pointer">
-      <div class="lbl">${st}${ic} <span class="tag ${c.chip_tier}">${c.chip_tier}</span> #${c.chip_id}${ads}</div>
+function sChips(){
+  let html=`<button class="btn pri" onclick="nav('create')">🚀 Создать чип</button><div class="sec">Мои чипы (${state.chips.length})</div>`;
+  if(!state.chips.length)html+=`<div class="card"><div class="empty">Пусто — создайте первый чип</div></div>`;
+  else[...state.chips].reverse().forEach(c=>{
+    const mark=c.contract_id?"📜":c.for_sale?"🛒":"💤";
+    const ic=c.chip_type==="CPU"?"💻":"🎮";
+    html+=`<div class="card" onclick="chipDetail(${c.chip_id})" style="cursor:pointer">
+      <div class="lbl">${mark}${ic} <span class="tag ${c.chip_tier}">${c.chip_tier}</span> #${c.chip_id}${c.marketing_ticks?` · 📢${c.marketing_ticks}`:""}</div>
       <div class="val">${safe(c.chip_name)}</div>
-      <div class="muted">🧩${c.cores} ⚡${c.freq} 🔬${c.techproc} | 📊${perf(c,c.ram_type).toFixed(0)}</div>
-      <div class="muted">💰${fmt$(c.cost)} → 💵${fmt$(c.sell_price)} | Прибыль: ${fmt$(c.lifetime_profit||0)}</div>
+      <div class="sub">🧩${c.cores} ⚡${c.freq} 🔬${c.techproc} · 📊${perf(c,c.ram_type).toFixed(0)}</div>
+      <div class="sub">💰${fmt$(c.cost)} → 💵${fmt$(c.sell_price)} · прибыль ${fmt$(c.lifetime_profit||0)}</div>
     </div>`;
   });
   h(html);
 }
-function chip_detail(id){
+function chipDetail(id){
   const c=state.chips.find(x=>x.chip_id===id);if(!c)return;
-  const pv=perf(c,c.ram_type);const age=Math.max(0,cur_day()-(c.created_day||0));const rel=Math.max(0,1-age/CHIP_LIFETIME);
-  let html=`<div class="mdlt">${c.chip_type==='CPU'?'💻':'🎮'} ${safe(c.chip_name)} <button onclick="close_modal()">✖</button></div>`;
-  html+=`<div class="row"><span>Тип</span><span class="tag ${c.chip_type.toLowerCase()}">${c.chip_type}</span></div>`;
-  html+=`<div class="row"><span>Класс</span><span class="tag ${c.chip_tier}">${c.chip_tier}</span></div>`;
-  html+=`<div class="row"><span>Техпроцесс</span><span>${c.techproc} нм</span></div>`;
-  html+=`<div class="row"><span>Ядра / Частота</span><span>${c.cores} / ${c.freq} МГц</span></div>`;
-  html+=`<div class="row"><span>Кэш L1/L2/L3</span><span>${c.l1}КБ / ${c.l2}КБ / ${c.l3}МБ</span></div>`;
-  html+=`<div class="row"><span>ОЗУ</span><span>${c.ram_size}ГБ ${c.ram_type} @ ${c.ram_freq}МГц</span></div>`;
-  html+=`<div class="row"><span>Разгон / Турбо</span><span>${c.overclock}% / ${c.turbo}%</span></div>`;
-  html+=`<div class="row"><span>Сокет</span><span>${c.socket} пин</span></div>`;
-  html+=`<div class="row"><span>Производительность</span><span>📊 ${pv.toFixed(1)}</span></div>`;
-  html+=`<div class="row"><span>Себестоимость</span><span>${fmt$(c.cost)}</span></div>`;
-  html+=`<div class="row"><span>Цена продажи</span><span>${fmt$(c.sell_price)}</span></div>`;
-  html+=`<div class="row"><span>Маркетинг</span><span>×${mkt_boost(c.marketing_ticks||0).toFixed(2)} (${c.marketing_ticks||0}д)</span></div>`;
-  html+=`<div class="row"><span>Продано / Прибыль</span><span>${c.sales_total||0} / ${fmt$(c.lifetime_profit||0)}</span></div>`;
-  html+=`<div class="row"><span>Актуальность</span><span>${Math.round(rel*100)}%</span></div>`;
+  const age=Math.max(0,state.day-(c.created_day||0)),rel=Math.max(0,1-age/CHIP_LIFETIME);
+  let html=`<div class="mdlt">${c.chip_type==="CPU"?"💻":"🎮"} ${safe(c.chip_name)} <button onclick="closeModal()">✖</button></div>`;
+  const rows=[["Тип",c.chip_type],["Класс",c.chip_tier],["Техпроцесс",c.techproc+" нм"],["Ядра / Частота",`${c.cores} / ${c.freq}`],["L1/L2/L3",`${c.l1}/${c.l2}/${c.l3}`],["ОЗУ",`${c.ram_size}ГБ ${c.ram_type} @${c.ram_freq}`],["Разгон/Турбо",`${c.overclock}% / ${c.turbo}%`],["Сокет",c.socket],["Perf",perf(c,c.ram_type).toFixed(1)],["Себестоимость",fmt$(c.cost)],["Цена",fmt$(c.sell_price)],["Маркетинг",`×${mktBoost(c.marketing_ticks||0).toFixed(2)} (${c.marketing_ticks||0}д)`],["Продано",`${c.sales_total||0} / ${fmt$(c.lifetime_profit||0)}`],["Актуальность",Math.round(rel*100)+"%"]];
+  rows.forEach(([a,b])=>html+=`<div class="row"><span>${a}</span><span>${b}</span></div>`);
   if(!c.contract_id){
-    if(c.for_sale){
-      html+=`<div class="g2" style="margin-top:8px"><button class="btn" onclick="chip_ads(${id})">📢 Реклама $5k</button><button class="btn" onclick="chip_unlist(${id})">❌ Снять</button></div>`;
-    } else if(rel>0){
-      html+=`<button class="btn pri" style="margin-top:8px" onclick="chip_list_prompt(${id})">🛒 На продажу</button>`;
-    }
-    html+=`<button class="btn dng" onclick="chip_scrap(${id})">🗑 Утилизировать (+15%)</button>`;
+    if(c.for_sale)html+=`<div class="g2" style="margin-top:10px"><button class="btn" onclick="chipAds(${id})">📢 $5k</button><button class="btn" onclick="chipUnlist(${id})">Снять</button></div>`;
+    else if(rel>0)html+=`<button class="btn pri" style="margin-top:10px" onclick="chipList(${id})">🛒 На продажу</button>`;
+    html+=`<button class="btn dng" style="margin-top:8px" onclick="chipScrap(${id})">🗑 Утилизировать (+15%)</button>`;
   }
   modal(html);
 }
-function chip_list_prompt(id){
-  const c=state.chips.find(x=>x.chip_id===id);if(!c)return;
-  const v=prompt(`Цена продажи (рек. ${fmt$(c.sell_price)}):`,c.sell_price);
-  if(v==null)return;const price=parseFloat(v);
-  if(isNaN(price)||price<=0)return toast('❌ Некорректная цена');
-  c.sell_price=Math.round(price*100)/100;c.for_sale=1;
-  save();close_modal();toast('✅ Выставлен на продажу');render();
-}
-function chip_unlist(id){const c=state.chips.find(x=>x.chip_id===id);if(!c)return;c.for_sale=0;save();close_modal();toast('✅ Снят');render()}
-function chip_ads(id){
-  const c=state.chips.find(x=>x.chip_id===id);if(!c)return;
-  if(state.player.capital<5000)return toast('❌ Нужно $5k');
-  if(!c.for_sale)return toast('❌ Только для чипов на продаже');
-  state.player.capital-=5000;
-  c.marketing_ticks=(c.marketing_ticks||0)+100;
-  state.player.popularity=Math.min(500,state.player.popularity+8);
-  save();close_modal();toast('📢 +100 дней рекламы');render();
-}
-function chip_scrap(id){
-  const c=state.chips.find(x=>x.chip_id===id);if(!c||c.contract_id)return;
-  if(!confirm('Утилизировать чип?'))return;
-  const ref=Math.round(c.cost*0.15*100)/100;
-  state.chips=state.chips.filter(x=>x.chip_id!==id);
-  state.player.capital+=ref;add_trust(-1);
-  save();close_modal();toast(`+${fmt$(ref)}`);render();
-}
+function chipList(id){const c=state.chips.find(x=>x.chip_id===id);if(!c)return;const v=prompt(`Цена (рек. ${fmt$(c.sell_price)})`,c.sell_price);if(v==null)return;const p=parseFloat(v);if(!(p>0))return toast("❌");c.sell_price=Math.round(p*100)/100;c.for_sale=1;save();closeModal();toast("✅");render()}
+function chipUnlist(id){const c=state.chips.find(x=>x.chip_id===id);if(c){c.for_sale=0;save();closeModal();toast("Снято");render()}}
+function chipAds(id){const c=state.chips.find(x=>x.chip_id===id);if(!c)return;if(state.player.capital<5000)return toast("❌ $5k");if(!c.for_sale)return toast("Сначала на продажу");state.player.capital-=5000;c.marketing_ticks=(c.marketing_ticks||0)+100;state.player.popularity=Math.min(500,state.player.popularity+8);save();closeModal();toast("📢 +100д");render()}
+function chipScrap(id){const c=state.chips.find(x=>x.chip_id===id);if(!c||c.contract_id)return;if(!confirm("Утилизировать?"))return;const r=Math.round(c.cost*.15*100)/100;state.chips=state.chips.filter(x=>x.chip_id!==id);state.player.capital+=r;addTrust(-1);save();closeModal();toast(`+${fmt$(r)}`);render()}
 
-// ═══════ CREATE CHIP ═══════
-let cc_data={};
-function s_create(){
-  if(!state.workers.length){h(`<div class="card">❌ Наймите рабочих!</div><button class="btn pri" onclick="nav('workers')">👥 К рабочим</button>`);return}
-  cc_data={step:0,params:{}};
-  render_create();
-}
-function render_create(){
-  const s=cc_data.step;let html='';
-  if(s===0){
-    html=`<h3>Шаг 1/5: Тип чипа</h3><div class="g2"><button class="btn pri" onclick="cc_data.type='CPU';cc_data.step=1;render_create()">💻 CPU</button><button class="btn pri" onclick="cc_data.type='GPU';cc_data.step=1;render_create()">🎮 GPU</button></div>`;
-  } else if(s===1){
-    html=`<h3>Шаг 2/5: Класс</h3>`;
-    for(const [k,v] of Object.entries(TIERS)){
-      html+=`<button class="btn" onclick="cc_data.tier='${k}';cc_data.step=2;render_create()">${v.n} (себест. ×${v.pm}, цена ×${v.dm})</button>`;
-    }
-  } else if(s===2){
-    html=`<h3>Шаг 3/5: Тип ОЗУ</h3>`;
-    for(const rt of ram_available()){
-      html+=`<button class="btn" onclick="cc_data.ram_type='${rt}';cc_data.step=3;render_create()">${RAM_TYPES[rt].n} (×${RAM_TYPES[rt].m})</button>`;
-    }
-  } else if(s===3){
-    html=`<h3>Шаг 4/5: Название</h3><input class="inp" id="cc-name" placeholder="Zenith X1" maxlength="25"><button class="btn pri" onclick="cc_name()">Далее</button>`;
-    setTimeout(()=>{$('cc-name')?.focus()},50);
-  } else if(s===4){
-    const pi=cc_data.param_idx||0;
-    if(pi>=PARAM_ORDER.length){cc_finish();return}
-    const pk=PARAM_ORDER[pi];const p=PARAMS[pk];
-    const mn=pk==='techproc'?max_val(pk):p.mn;
-    const mx=pk==='techproc'?10000:max_val(pk);
-    html=`<h3>Шаг 5/5: ${pi+1}/${PARAM_ORDER.length} параметров</h3>`;
-    html+=`<div class="card"><div class="lbl">${p.n}</div><div class="val">Диапазон: ${mn.toLocaleString()} — ${mx.toLocaleString()} ${p.u}</div></div>`;
-    html+=`<input class="inp" id="cc-p" type="number" min="${mn}" max="${mx}" value="${mn}">`;
-    html+=`<div class="g2"><button class="btn" onclick="cc_data.step=3;render_create()">⬅️ Назад</button><button class="btn pri" onclick="cc_param()">Далее</button></div>`;
-    setTimeout(()=>{$('cc-p')?.focus();$('cc-p')?.select()},50);
+/* create */
+let CC=null;
+function sCreate(){
+  if(!state.workers.length){h(`<div class="card"><div class="val">❌ Нужны рабочие</div></div><button class="btn pri" onclick="nav('workers')">👥 Нанять</button>`);return}
+  if(!CC)CC={step:0,params:{}};
+  const s=CC.step;let html="";
+  if(s===0)html=`<div class="sec">1/5 Тип</div><div class="g2"><button class="btn pri" onclick="CC.type='CPU';CC.step=1;sCreate()">💻 CPU</button><button class="btn pri" onclick="CC.type='GPU';CC.step=1;sCreate()">🎮 GPU</button></div>`;
+  else if(s===1){html=`<div class="sec">2/5 Класс</div>`;for(const[k,v]of Object.entries(TIERS))html+=`<button class="btn" onclick="CC.tier='${k}';CC.step=2;sCreate()">${v.n} · pm×${v.pm} dm×${v.dm}</button>`}
+  else if(s===2){html=`<div class="sec">3/5 ОЗУ</div>`;for(const rt of ramAvail())html+=`<button class="btn" onclick="CC.ram_type='${rt}';CC.step=3;sCreate()">🧠 ${RAM_TYPES[rt].n} ×${RAM_TYPES[rt].m}</button>`}
+  else if(s===3)html=`<div class="sec">4/5 Имя</div><input class="inp" id="ccn" maxlength="25" placeholder="Название..."><button class="btn pri" onclick="ccName()">Далее</button>`;
+  else if(s===4){
+    const pi=CC.pi||0;if(pi>=PARAM_ORDER.length)return ccFinish();
+    const pk=PARAM_ORDER[pi],P=PARAMS[pk];
+    const mn=pk==="techproc"?maxVal(pk):P.mn, mx=pk==="techproc"?10000:maxVal(pk);
+    html=`<div class="sec">5/5 · ${pi+1}/${PARAM_ORDER.length}</div>
+    <div class="card"><div class="lbl">${P.n}</div><div class="val">${mn.toLocaleString()} — ${mx.toLocaleString()} ${P.u}</div></div>
+    <input class="inp" id="ccp" type="number" value="${mn}">
+    <div class="g2"><button class="btn" onclick="ccMax()">Макс</button><button class="btn pri" onclick="ccParam()">Далее</button></div>`;
   }
   h(html);
 }
-function cc_name(){
-  const v=$('cc-name')?.value?.trim();
-  if(!v)return toast('❌ Введите название');
-  cc_data.name=v.slice(0,25);cc_data.step=4;cc_data.param_idx=0;render_create();
-}
-function cc_param(){
-  const pi=cc_data.param_idx||0;const pk=PARAM_ORDER[pi];
-  const mn=pk==='techproc'?max_val(pk):PARAMS[pk].mn;
-  const mx=pk==='techproc'?10000:max_val(pk);
-  const v=parseInt($('cc-p')?.value);
-  if(isNaN(v)||v<mn||v>mx)return toast(`❌ ${mn}—${mx}`);
-  cc_data.params[pk]=v;cc_data.param_idx=pi+1;
-  render_create();
-}
-function cc_finish(){
-  const fc={};
-  for(const pk of PARAM_ORDER){
-    let v=cc_data.params[pk]??PARAMS[pk].mn;
-    if(pk==='techproc'){if(v<=0)v=10000;v=Math.max(max_val(pk),Math.min(10000,v))}
-    else{v=Math.max(PARAMS[pk].mn,Math.min(max_val(pk),v))}
-    fc[pk]=v;
-  }
-  const [has_m,pen]=chk_mistake();
-  if(has_m){
-    add_trust(-3);
-    state.player.capital=Math.max(0,state.player.capital-pen);
-    save();toast(`⚠️ Брак −${fmt$(pen)}`,3500);
-    if(state.player.capital<=0){add_news(`🏚️ ${state.player.company}`,'Банкротство','company');state.chips=[];state.workers=[];state.contracts=[];state.research_active=[]}
-    nav('menu');return;
-  }
-  let cost=prod_cost(fc,cc_data.ram_type);
-  if(a_techs().has('auto'))cost=Math.round(cost*0.8*100)/100;
-  cost=Math.round(cost*TIERS[cc_data.tier].pm*100)/100;
-  const sp=Math.max(cost*TIERS[cc_data.tier].dm,cost+5);
-  if(state.player.capital<cost){toast(`❌ Нужно ${fmt$(cost)}`);return nav('menu')}
+function ccName(){const v=$("ccn")?.value?.trim();if(!v)return toast("Имя?");CC.name=v.slice(0,25);CC.step=4;CC.pi=0;sCreate()}
+function ccMax(){const pi=CC.pi||0,pk=PARAM_ORDER[pi];$("ccp").value=pk==="techproc"?maxVal(pk):maxVal(pk);ccParam()}
+function ccParam(){const pi=CC.pi||0,pk=PARAM_ORDER[pi],P=PARAMS[pk];const mn=pk==="techproc"?maxVal(pk):P.mn,mx=pk==="techproc"?10000:maxVal(pk);const v=parseInt($("ccp")?.value);if(isNaN(v)||v<mn||v>mx)return toast(`❌ ${mn}—${mx}`);CC.params[pk]=v;CC.pi=pi+1;sCreate()}
+function ccFinish(){
+  const fc={};for(const pk of PARAM_ORDER){let v=CC.params[pk]??PARAMS[pk].mn;if(pk==="techproc")v=Math.max(maxVal(pk),Math.min(10000,v));else v=Math.max(PARAMS[pk].mn,Math.min(maxVal(pk),v));fc[pk]=v}
+  const[bad,pen]=chkMistake();
+  if(bad){addTrust(-3);state.player.capital=Math.max(0,state.player.capital-pen);save();toast(`⚠️ Брак −${fmt$(pen)}`);CC=null;nav("menu");return}
+  let cost=prodCost(fc,CC.ram_type);if(techs().has("auto"))cost=Math.round(cost*.8*100)/100;cost=Math.round(cost*TIERS[CC.tier].pm*100)/100;
+  const sp=Math.max(cost*TIERS[CC.tier].dm,cost+5);
+  if(state.player.capital<cost){toast(`❌ ${fmt$(cost)}`);return}
   state.player.capital-=cost;
-  state.chips.push({chip_id:state.next_chip_id++,chip_type:cc_data.type,chip_name:cc_data.name,chip_tier:cc_data.tier,cost,...fc,ram_type:cc_data.ram_type,for_sale:0,sell_price:Math.round(sp*100)/100,marketing_ticks:0,lifetime_profit:0,sales_total:0,contract_id:0,created_day:cur_day()});
-  add_trust(2);save();toast(`🎉 ${safe(cc_data.name)} создан!`);nav('chips');
+  state.chips.push({chip_id:state.next_chip_id++,chip_type:CC.type,chip_name:CC.name,chip_tier:CC.tier,cost,...fc,ram_type:CC.ram_type,for_sale:0,sell_price:Math.round(sp*100)/100,marketing_ticks:0,lifetime_profit:0,sales_total:0,contract_id:0,created_day:state.day});
+  addTrust(2);CC=null;save();toast(`🎉 ${safe(state.chips.at(-1).chip_name)}`);nav("chips");
 }
 
-// ═══════ R&D ═══════
-function s_rd(){
-  const active=state.research_active;
-  let html=`<h3>Активные исследования (${active.length}/2)</h3>`;
-  if(!active.length)html+=`<div class="card muted">Ничего не исследуется</div>`;
-  else active.forEach(r=>{
-    const prog=(cur_day()-r.started_day)/(r.finish_day-r.started_day)*100;
-    html+=`<div class="card"><div class="lbl">⏳ ${tech_name(r.tech_key)}</div><div class="val">${Math.max(0,r.finish_day-cur_day())} дн.</div><div class="prog"><div class="pbar" style="width:${Math.min(100,prog)}%"></div></div></div>`;
-  });
-  const tp=max_val('techproc');
-  html+=`<div class="card"><div class="lbl">Капы</div><div class="val">🔬 ${tp}нм · 🧩≤${tech_cores_cap(tp)} · ⚡≤${tech_freq_cap(tp)}</div></div>`;
-  html+=`<h3>Параметры</h3>`;
+function sRD(){
+  const act=state.research_active;let html=`<div class="sec">Активные (${act.length}/2)</div>`;
+  if(!act.length)html+=`<div class="card"><div class="empty">Ничего не исследуется</div></div>`;
+  else act.forEach(r=>{const pr=Math.min(100,(state.day-r.started_day)/Math.max(1,r.finish_day-r.started_day)*100);html+=`<div class="card"><div class="lbl">⏳ ${techName(r.tech_key)}</div><div class="val">${Math.max(0,r.finish_day-state.day)} дн.</div><div class="prog"><div class="pbar" style="width:${pr}%"></div></div></div>`});
+  const tp=maxVal("techproc");
+  html+=`<div class="card"><div class="lbl">Капы</div><div class="val">${tp}нм · 🧩≤${coresCap(tp)} · ⚡≤${freqCap(tp)}</div></div>`;
+  html+=`<div class="sec">Параметры</div>`;
   for(const pk of PARAM_ORDER){
-    const lvl=research_level(pk);const cur=max_val(pk);const nxt=next_val_preview(pk);
-    const cost=p_cost(pk,lvl);let days=p_days(pk,lvl);
-    if(a_techs().has('advanced_rd'))days=Math.max(1,Math.floor(days*0.7));
-    days=Math.max(1,Math.floor(days*(1+active.length*0.5)));
-    const busy=has_active_key('param_'+pk);
-    html+=`<div class="card"><div class="lbl">${PARAMS[pk].n} (ур.${lvl})</div><div class="val">${cur.toLocaleString()} → ${nxt.toLocaleString()} ${PARAMS[pk].u}</div><button class="btn sm" ${busy||active.length>=2?'disabled':''} onclick="start_research('param_${pk}',${cost},${days})">▶️ ${fmt$(cost)} · ${days}д ${busy?'⏳':''}</button></div>`;
+    const lvl=rLvl(pk),cur=maxVal(pk),nxt=nextVal(pk),cost=pCost(pk,lvl);
+    let days=pDays(pk,lvl);if(techs().has("advanced_rd"))days=Math.max(1,days*.7|0);days=Math.max(1,days*(1+act.length*.5)|0);
+    const busy=hasActive("param_"+pk),capped=(pk!=="techproc"&&nxt<=cur)||(pk==="techproc"&&nxt>=cur);
+    html+=`<div class="card"><div class="lbl">${PARAMS[pk].n} · ур.${lvl}</div><div class="val">${cur.toLocaleString()} → ${nxt.toLocaleString()} ${PARAMS[pk].u}</div>
+    ${busy?`<div class="sub">⏳ уже идёт</div>`:capped?`<div class="sub">🔒 кап</div>`:`<button class="btn sm" ${act.length>=2?"disabled":""} onclick="startRes('param_${pk}',${cost},${days})">▶️ ${fmt$(cost)} · ${days}д</button>`}</div>`;
   }
-  html+=`<h3>Технологии</h3>`;
-  const comp=a_techs();
-  for(const [k,t] of Object.entries(TECHS)){
-    if(comp.has(k)){html+=`<div class="card"><div class="lbl">✅ ${t.n}</div><div class="muted">${t.desc}</div></div>`;continue}
-    if(t.req&&!comp.has(t.req)){html+=`<div class="card"><div class="lbl">🔒 ${t.n}</div><div class="muted">Нужно: ${TECHS[t.req].n}</div></div>`;continue}
-    if(has_active_key(k)){html+=`<div class="card"><div class="lbl">⏳ ${t.n}</div><div class="muted">${t.desc}</div></div>`;continue}
-    let days=Math.floor(t.d*RD_MULT);
-    if(comp.has('advanced_rd')&&k!=='advanced_rd')days=Math.max(1,Math.floor(days*0.7));
-    days=Math.max(1,Math.floor(days*(1+active.length*0.5)));
-    html+=`<div class="card"><div class="lbl">📖 ${t.n}</div><div class="muted">${t.desc}</div><button class="btn sm" ${active.length>=2?'disabled':''} onclick="start_research('${k}',${t.c},${days})">▶️ ${fmt$(t.c)} · ${days}д</button></div>`;
+  html+=`<div class="sec">Технологии</div>`;
+  const C=techs();
+  for(const[k,t]of Object.entries(TECHS)){
+    if(C.has(k)){html+=`<div class="card"><div class="lbl">✅ ${t.n}</div><div class="sub">${t.desc}</div></div>`;continue}
+    if(t.req&&!C.has(t.req)){html+=`<div class="card"><div class="lbl">🔒 ${t.n}</div><div class="sub">Нужно: ${TECHS[t.req].n}</div></div>`;continue}
+    if(hasActive(k)){html+=`<div class="card"><div class="lbl">⏳ ${t.n}</div><div class="sub">${t.desc}</div></div>`;continue}
+    let days=Math.floor(t.d*RD_MULT);if(C.has("advanced_rd")&&k!=="advanced_rd")days=Math.max(1,days*.7|0);days=Math.max(1,days*(1+act.length*.5)|0);
+    html+=`<div class="card"><div class="lbl">📖 ${t.n}</div><div class="sub">${t.desc}</div><button class="btn sm" ${act.length>=2?"disabled":""} onclick="startRes('${k}',${t.c},${days})">▶️ ${fmt$(t.c)} · ${days}д</button></div>`;
   }
   h(html);
 }
-function start_research(key,cost,days){
-  if(state.research_active.length>=2)return toast('❌ Макс 2 в очереди');
-  if(has_active_key(key))return toast('❌ Уже исследуется');
-  if(state.player.capital<cost)return toast(`❌ Нужно ${fmt$(cost)}`);
-  if(key.startsWith('param_')){
-    const pk=key.slice(6);const cur=max_val(pk);const nxt=next_val_preview(pk);
-    if(pk!=='techproc'&&nxt<=cur)return toast('❌ Сначала техпроцесс');
-    if(pk==='techproc'&&nxt>=cur)return toast('❌ Достигнут кап');
-  } else {
-    if(a_techs().has(key))return toast('❌ Уже изучено');
-    const t=TECHS[key];if(t.req&&!a_techs().has(t.req))return toast('❌ Нужна предыдущая');
-  }
-  state.player.capital-=cost;
-  state.research_active.push({id:state.next_research_id++,tech_key:key,started_day:cur_day(),finish_day:cur_day()+days});
-  save();toast(`✅ Начато (${days}д)`);render();
+function startRes(key,cost,days){
+  if(state.research_active.length>=2)return toast("Макс 2");
+  if(hasActive(key))return toast("Уже");
+  if(state.player.capital<cost)return toast(`❌ ${fmt$(cost)}`);
+  if(key.startsWith("param_")){const pk=key.slice(6),cur=maxVal(pk),nxt=nextVal(pk);if(pk!=="techproc"&&nxt<=cur)return toast("Сначала техпроцесс");if(pk==="techproc"&&nxt>=cur)return toast("Кап")}
+  else{if(techs().has(key))return toast("Уже");const t=TECHS[key];if(t.req&&!techs().has(t.req))return toast("Нужна предыдущая")}
+  state.player.capital-=cost;state.research_active.push({id:state.next_research_id++,tech_key:key,started_day:state.day,finish_day:state.day+days});save();toast(`✅ ${days}д`);render();
 }
 
-// ═══════ WORKERS ═══════
-function s_workers(){
-  let html=`<div class="card"><div class="lbl">Штат</div><div class="val">${worker_txt()}</div><div class="muted">Эффективность: ${(worker_eff()*100).toFixed(0)}%</div></div>`;
-  html+=`<h3>Мои сотрудники (${state.workers.length})</h3>`;
-  if(!state.workers.length)html+=`<div class="card muted">Никого не нанято</div>`;
-  else state.workers.forEach(w=>{
-    const dc=a_techs().has('hr_school')?0.7:1.0;
-    const cost=Math.floor(w.skill*2500*dc);
-    html+=`<div class="card"><div class="lbl">${safe(w.name)}</div><div class="val">🎓${w.skill} ❤️${w.loyalty}% 💵$${w.salary.toFixed(0)}/мес</div><div class="g2" style="margin-top:6px">${w.skill<5?`<button class="btn sm" onclick="train_worker(${w.worker_id})">🎓 Обучить ${fmt$(cost)}</button>`:`<button class="btn sm" disabled>МАКС ур.</button>`}<button class="btn sm dng" onclick="fire_worker(${w.worker_id})">🚪 Уволить</button></div></div>`;
-  });
-  html+=`<h3>🤝 Наём (${state.free_workers.length})</h3>`;
-  if(!state.free_workers.length){seed_free_workers();save()}
-  state.free_workers.slice(0,6).forEach(w=>{
-    const cost=Math.round(w.salary*2+w.skill*500);
-    html+=`<div class="card"><div class="lbl">${safe(w.name)}</div><div class="val">🎓${w.skill} ❤️${w.loyalty}% $${w.salary.toFixed(0)}/мес</div><button class="btn sm" onclick="hire_worker(${w.worker_id},${cost})">🤝 Нанять ${fmt$(cost)}</button></div>`;
-  });
+function sWorkers(){
+  let html=`<div class="card"><div class="lbl">Штат</div><div class="val">${wTxt()}</div><div class="sub">Эффективность ${(wEff()*100).toFixed(0)}%</div></div>`;
+  html+=`<div class="sec">Мои (${state.workers.length})</div>`;
+  if(!state.workers.length)html+=`<div class="card"><div class="empty">Никого не нанято</div></div>`;
+  else state.workers.forEach(w=>{const dc=techs().has("hr_school")?.7:1,cost=Math.floor(w.skill*2500*dc);
+    html+=`<div class="card"><div class="lbl">${safe(w.name)}</div><div class="val">🎓${w.skill} ❤️${w.loyalty}% · $${w.salary.toFixed(0)}/мес</div><div class="g2" style="margin-top:8px">${w.skill<5?`<button class="btn sm" onclick="trainW(${w.worker_id})">🎓 ${fmt$(cost)}</button>`:`<button class="btn sm" disabled>MAX</button>`}<button class="btn sm dng" onclick="fireW(${w.worker_id})">🚪</button></div></div>`});
+  if(!state.free_workers.length)seedWorkers();
+  html+=`<div class="sec">🤝 Найм (${state.free_workers.length})</div>`;
+  state.free_workers.slice(0,6).forEach(w=>{const cost=Math.round(w.salary*2+w.skill*500);
+    html+=`<div class="card"><div class="lbl">${safe(w.name)}</div><div class="val">🎓${w.skill} ❤️${w.loyalty}% · $${w.salary.toFixed(0)}</div><button class="btn sm" style="margin-top:8px" onclick="hireW(${w.worker_id},${cost})">🤝 ${fmt$(cost)}</button></div>`});
   h(html);
 }
-function hire_worker(wid,cost){
-  const idx=state.free_workers.findIndex(w=>w.worker_id===wid);if(idx===-1)return toast('❌ Уже занят');
-  if(state.player.capital<cost)return toast(`❌ Нужно ${fmt$(cost)}`);
-  const w=state.free_workers[idx];state.free_workers.splice(idx,1);
-  w.loyalty=Math.min(100,w.loyalty+5);
-  state.workers.push(w);state.player.capital-=cost;add_trust(1);
-  seed_free_workers();save();toast('✅ Нанят');render();
-}
-function train_worker(wid){
-  const w=state.workers.find(x=>x.worker_id===wid);if(!w||w.skill>=5)return;
-  const dc=a_techs().has('hr_school')?0.7:1.0;const cost=Math.floor(w.skill*2500*dc);
-  if(state.player.capital<cost)return toast(`❌ Нужно ${fmt$(cost)}`);
-  state.player.capital-=cost;w.skill++;w.loyalty=Math.min(100,w.loyalty+8);
-  save();toast(`✅ ${w.name}: ${w.skill-1}→${w.skill}`);render();
-}
-function fire_worker(wid){
-  const idx=state.workers.findIndex(x=>x.worker_id===wid);if(idx===-1)return;
-  if(!confirm('Уволить сотрудника?'))return;
-  const w=state.workers[idx];const ref=Math.round(w.salary*0.3*100)/100;
-  state.workers.splice(idx,1);state.player.capital+=ref;add_trust(-2);
-  save();toast(`🚪 +${fmt$(ref)}`);render();
-}
+function hireW(id,cost){const i=state.free_workers.findIndex(w=>w.worker_id===id);if(i<0)return;if(state.player.capital<cost)return toast("❌");const w=state.free_workers.splice(i,1)[0];w.loyalty=Math.min(100,w.loyalty+5);state.workers.push(w);state.player.capital-=cost;addTrust(1);seedWorkers();save();toast("✅");render()}
+function trainW(id){const w=state.workers.find(x=>x.worker_id===id);if(!w||w.skill>=5)return;const cost=Math.floor(w.skill*2500*(techs().has("hr_school")?.7:1));if(state.player.capital<cost)return toast("❌");state.player.capital-=cost;w.skill++;w.loyalty=Math.min(100,w.loyalty+8);save();toast("✅");render()}
+function fireW(id){const i=state.workers.findIndex(x=>x.worker_id===id);if(i<0)return;if(!confirm("Уволить?"))return;const w=state.workers.splice(i,1)[0];const r=Math.round(w.salary*.3*100)/100;state.player.capital+=r;addTrust(-2);save();toast(`+${fmt$(r)}`);render()}
 
-// ═══════ DRIVERS ═══════
-function s_drivers(){
-  const p=state.player;const dc=a_techs().has('driver_sdk')?0.7:1.0;
-  const price=v=>Math.floor((Math.min(100,v+10)-v)*1500*dc);
-  h(`
-    <div class="card"><div class="lbl">Общий мультипликатор</div><div class="val">🖥 ×${driver_mult(p).toFixed(2)}</div><div class="muted">Влияет на продажи чипов</div></div>
-    <div class="card"><div class="lbl">🪟 Windows (вес 70%)</div><div class="val">${p.driver_win.toFixed(0)}%</div><div class="prog"><div class="pbar" style="width:${p.driver_win}%"></div></div><button class="btn sm" style="margin-top:6px" onclick="upgrade_driver('win')" ${p.driver_win>=100?'disabled':''}>+10% (${fmt$(price(p.driver_win))})</button></div>
-    <div class="card"><div class="lbl">🍎 macOS (вес 20%)</div><div class="val">${p.driver_mac.toFixed(0)}%</div><div class="prog"><div class="pbar" style="width:${p.driver_mac}%"></div></div><button class="btn sm" style="margin-top:6px" onclick="upgrade_driver('mac')" ${p.driver_mac>=100?'disabled':''}>+10% (${fmt$(price(p.driver_mac))})</button></div>
-    <div class="card"><div class="lbl">🐧 Linux (вес 10%)</div><div class="val">${p.driver_lin.toFixed(0)}%</div><div class="prog"><div class="pbar" style="width:${p.driver_lin}%"></div></div><button class="btn sm" style="margin-top:6px" onclick="upgrade_driver('lin')" ${p.driver_lin>=100?'disabled':''}>+10% (${fmt$(price(p.driver_lin))})</button></div>
-    <div class="card muted">⚠️ Драйверы теряют 5% каждые ${DRV_DECAY} дней. Следующая деградация: день ${p.driver_day+DRV_DECAY}</div>
-  `);
+function sDrivers(){
+  const p=state.player,dc=techs().has("driver_sdk")?.7:1,price=v=>Math.floor((Math.min(100,v+10)-v)*1500*dc);
+  const row=(k,ico,lab)=>{const v=p["driver_"+k];return`<div class="card"><div class="lbl">${ico} ${lab}</div><div class="val">${v.toFixed(0)}/100</div><div class="prog"><div class="pbar" style="width:${v}%"></div></div><button class="btn sm" style="margin-top:8px" ${v>=100?"disabled":""} onclick="upDrv('${k}')">+10 · ${fmt$(price(v))}</button></div>`};
+  h(`<div class="card"><div class="lbl">Мультипликатор</div><div class="val">×${drvMult(p).toFixed(2)}</div><div class="sub">Win 70% · Mac 20% · Lin 10% · −5% каждые ${DRV_DECAY}д</div></div>${row("win","🪟","Windows")}${row("mac","🍎","macOS")}${row("lin","🐧","Linux")}`);
 }
-function upgrade_driver(os){
-  const p=state.player;const cur=p['driver_'+os];if(cur>=100)return toast('❌ Максимум');
-  const dc=a_techs().has('driver_sdk')?0.7:1.0;const cost=Math.floor((Math.min(100,cur+10)-cur)*1500*dc);
-  if(p.capital<cost)return toast(`❌ Нужно ${fmt$(cost)}`);
-  p['driver_'+os]=Math.min(100,cur+10);p.capital-=cost;add_trust(1);
-  save();toast(`✅ ${os} +10%`);render();
-}
+function upDrv(os){const p=state.player,cur=p["driver_"+os];if(cur>=100)return;const dc=techs().has("driver_sdk")?.7:1,cost=Math.floor((Math.min(100,cur+10)-cur)*1500*dc);if(p.capital<cost)return toast("❌");p.capital-=cost;p["driver_"+os]=Math.min(100,cur+10);addTrust(1);save();toast("✅");render()}
 
-// ═══════ SHARES ═══════
-function s_shares(){
+function sShares(){
   const p=state.player;
-  let html=`<div class="card"><div class="lbl">Мои акции</div><div class="val">${p.total_shares.toLocaleString()} всего</div><div class="muted">На рынке: ${p.shares_market.toLocaleString()} · У меня: ${(p.total_shares-p.shares_market).toLocaleString()}</div></div>`;
-  html+=`<div class="card"><div class="lbl">Цена</div><div class="val">$${p.share_price.toFixed(2)}</div><div class="muted">Стоимость компании: ${fmt$(company_value(p))}</div></div>`;
-  html+=`<div class="g2">
-    <button class="btn pri" onclick="issue_shares()">📈 Выпустить</button>
-    <button class="btn pri" onclick="buyback_shares()">📉 Выкупить</button>
-  </div>`;
-  html+=`<h3>🛒 Купить у AI-компаний</h3>`;
-  state.ai_companies.forEach(ai=>{
-    const own=state.share_ownership[ai.id]||0;
-    const avail=Math.min(Math.floor(ai.total_shares*0.4)-own,ai.shares_market);
-    html+=`<div class="card"><div class="lbl">${safe(ai.company_name)}</div><div class="val">$${ai.share_price.toFixed(2)}</div><div class="muted">Рынок: ${ai.shares_market} · Моих: ${own} · Доступно: ${Math.max(0,avail)}</div>${avail>0?`<button class="btn sm" onclick="buy_ai_shares('${ai.id}')">🛒 Купить</button>`:'<button class="btn sm" disabled>Лимит 40%</button>'}</div>`;
-  });
-  html+=`<h3>💰 Мои инвестиции</h3>`;
-  const inv=Object.entries(state.share_ownership).filter(([_,s])=>s>0);
-  if(!inv.length)html+=`<div class="card muted">Нет вложений</div>`;
-  else inv.forEach(([id,sh])=>{
-    const ai=state.ai_companies.find(a=>a.id===id);if(!ai)return;
-    html+=`<div class="card"><div class="lbl">${safe(ai.company_name)}</div><div class="val">${sh} акций · ${fmt$(sh*ai.share_price)}</div><button class="btn sm" onclick="sell_ai_shares('${id}')">💰 Продать</button></div>`;
-  });
+  let html=`<div class="card"><div class="lbl">Мои акции</div><div class="val">${p.total_shares.toLocaleString()} всего</div><div class="sub">У меня ${(p.total_shares-p.shares_market).toLocaleString()} · На рынке ${p.shares_market.toLocaleString()}</div></div>
+  <div class="card"><div class="lbl">Цена акции</div><div class="val">$${p.share_price.toFixed(2)}</div><div class="sub">Стоимость компании ${fmt$(companyVal(p))}</div></div>
+  <div class="g2"><button class="btn pri" onclick="issueSh()">📈 Выпустить</button><button class="btn pri" onclick="buybackSh()">📉 Выкупить</button></div>
+  <div class="sec">🛒 Купить у AI</div>`;
+  state.ai_companies.forEach(ai=>{const own=state.share_ownership[ai.id]||0,avail=Math.min(Math.floor(ai.total_shares*.4)-own,ai.shares_market);
+    html+=`<div class="card"><div class="lbl">${safe(ai.company_name)}</div><div class="val">$${ai.share_price.toFixed(2)}</div><div class="sub">Рынок ${ai.shares_market} · Моих ${own} · Доступно ${Math.max(0,avail)}</div>${avail>0?`<button class="btn sm" style="margin-top:8px" onclick="buyAISh('${ai.id}')">🛒 Купить</button>`:`<div class="sub">Лимит 40%</div>`}</div>`});
+  html+=`<div class="sec">💰 Мои инвестиции</div>`;
+  const inv=Object.entries(state.share_ownership).filter(([,s])=>s>0);
+  if(!inv.length)html+=`<div class="card"><div class="empty">Нет вложений</div></div>`;
+  else inv.forEach(([id,sh])=>{const ai=state.ai_companies.find(a=>a.id===id);if(!ai)return;html+=`<div class="card"><div class="lbl">${safe(ai.company_name)}</div><div class="val">${sh} шт · ${fmt$(sh*ai.share_price)}</div><button class="btn sm" style="margin-top:8px" onclick="sellAISh('${id}')">💰 Продать</button></div>`});
   h(html);
 }
-function issue_shares(){
-  const p=state.player;const mx=Math.floor(p.total_shares*0.2);
-  if(mx<100)return toast('❌ Лимит слишком мал');
-  const v=prompt(`Количество (100 - ${mx.toLocaleString()}):`,100);if(v==null)return;
-  const a=parseInt(v);if(isNaN(a)||a<100||a>mx)return toast('❌');
-  p.total_shares+=a;p.shares_market+=a;p.share_price*=0.95;add_trust(-3);
-  save();toast(`✅ Выпущено ${a}`);render();
-}
-function buyback_shares(){
-  const p=state.player;if(p.shares_market<10)return toast('❌ Мало на рынке');
-  const v=prompt(`Количество (до ${p.shares_market.toLocaleString()}):`,10);if(v==null)return;
-  const a=parseInt(v);if(isNaN(a)||a<1||a>p.shares_market)return toast('❌');
-  const cost=Math.ceil(a*p.share_price*1.05);
-  if(p.capital<cost)return toast(`❌ Нужно ${fmt$(cost)}`);
-  p.capital-=cost;p.shares_market-=a;p.total_shares-=a;p.share_price*=1.03;add_trust(3);
-  save();toast(`✅ Выкуплено -${fmt$(cost)}`);render();
-}
-function buy_ai_shares(id){
-  const ai=state.ai_companies.find(a=>a.id===id);if(!ai)return;
-  const own=state.share_ownership[id]||0;
-  const avail=Math.min(Math.floor(ai.total_shares*0.4)-own,ai.shares_market);
-  if(avail<=0)return toast('❌ Нет доступных');
-  const v=prompt(`Куплить (до ${avail}) по $${ai.share_price.toFixed(2)}:`,Math.min(10,avail));if(v==null)return;
-  const a=parseInt(v);if(isNaN(a)||a<1||a>avail)return toast('❌');
-  const tot=a*ai.share_price;
-  if(state.player.capital<tot)return toast(`❌ Нужно ${fmt$(tot)}`);
-  state.player.capital-=tot;ai.capital+=tot;ai.shares_market-=a;
-  state.share_ownership[id]=(state.share_ownership[id]||0)+a;
-  save();toast(`✅ +${a} акций`);render();
-}
-function sell_ai_shares(id){
-  const ai=state.ai_companies.find(a=>a.id===id);const own=state.share_ownership[id]||0;
-  if(!ai||own<=0)return;
-  const v=prompt(`Продать (до ${own}) по $${ai.share_price.toFixed(2)}:`,own);if(v==null)return;
-  const a=parseInt(v);if(isNaN(a)||a<1||a>own)return toast('❌');
-  const rev=a*ai.share_price;
-  state.player.capital+=rev;ai.shares_market+=a;
-  state.share_ownership[id]=own-a;
-  save();toast(`✅ +${fmt$(rev)}`);render();
-}
+function issueSh(){const p=state.player,mx=Math.floor(p.total_shares*.2);if(mx<100)return toast("❌");const v=prompt(`100—${mx}`,100);if(v==null)return;const a=+v;if(a<100||a>mx)return toast("❌");p.total_shares+=a;p.shares_market+=a;p.share_price*=.95;addTrust(-3);save();toast("✅");render()}
+function buybackSh(){const p=state.player;if(p.shares_market<10)return toast("Нет");const v=prompt(`до ${p.shares_market}`,10);if(v==null)return;const a=+v;if(a<1||a>p.shares_market)return toast("❌");const cost=Math.ceil(a*p.share_price*1.05);if(p.capital<cost)return toast(`❌ ${fmt$(cost)}`);p.capital-=cost;p.shares_market-=a;p.total_shares-=a;p.share_price*=1.03;addTrust(3);save();toast("✅");render()}
+function buyAISh(id){const ai=state.ai_companies.find(a=>a.id===id);if(!ai)return;const own=state.share_ownership[id]||0,avail=Math.min(Math.floor(ai.total_shares*.4)-own,ai.shares_market);if(avail<=0)return toast("Лимит");const v=prompt(`до ${avail} × $${ai.share_price.toFixed(2)}`,Math.min(10,avail));if(v==null)return;const a=+v;if(a<1||a>avail)return toast("❌");const tot=a*ai.share_price;if(state.player.capital<tot)return toast("❌");state.player.capital-=tot;ai.capital+=tot;ai.shares_market-=a;state.share_ownership[id]=own+a;save();toast("✅");render()}
+function sellAISh(id){const ai=state.ai_companies.find(a=>a.id===id),own=state.share_ownership[id]||0;if(!ai||own<=0)return;const v=prompt(`до ${own}`,own);if(v==null)return;const a=+v;if(a<1||a>own)return toast("❌");const rev=a*ai.share_price;state.player.capital+=rev;ai.shares_market+=a;state.share_ownership[id]=own-a;save();toast(`+${fmt$(rev)}`);render()}
 
-// ═══════ CONTRACTS ═══════
-function s_contracts(){
-  const pend=state.contracts.filter(c=>c.status==='PENDING'&&c.receiver_id==='self');
-  const active=state.contracts.filter(c=>c.status==='ACTIVE');
-  const done=state.contracts.filter(c=>['COMPLETED','FAILED','REJECTED'].includes(c.status)).slice(0,10);
-  let html=`<button class="btn pri" onclick="generate_corp_contracts()">📨 Запросить у корпораций (3 шт)</button>`;
-  html+=`<h3>📥 Входящие (${pend.length})</h3>`;
-  if(!pend.length)html+=`<div class="card muted">Нет предложений</div>`;
-  else pend.forEach(c=>{
-    html+=`<div class="card"><div class="lbl">📨 ${safe(c.extra_text||'?')} · #${c.id}</div><div class="val">${c.chip_type}×${c.amount}</div><div class="muted">💰 Награда: ${fmt$(c.reward)} | ❌ Штраф: ${fmt$(c.penalty)} | ⏳ ${c.duration}д</div><div class="g2" style="margin-top:6px"><button class="btn sm pri" onclick="accept_contract(${c.id})">✅ Принять</button><button class="btn sm dng" onclick="reject_contract(${c.id})">❌ Отклонить</button></div></div>`;
-  });
-  html+=`<h3>📚 Активные (${active.length})</h3>`;
-  if(!active.length)html+=`<div class="card muted">Нет активных</div>`;
-  else active.forEach(c=>{
-    const prog=c.delivered/c.amount*100;
-    html+=`<div class="card"><div class="lbl">📚 #${c.id} ${safe(c.extra_text||'?')}</div><div class="val">${c.chip_type} ${c.delivered}/${c.amount}</div><div class="prog"><div class="pbar" style="width:${prog}%"></div></div><div class="muted">До ${c.finish_day-cur_day()}д · Награда ${fmt$(c.reward)}</div></div>`;
-  });
-  html+=`<h3>📖 История</h3>`;
-  if(!done.length)html+=`<div class="card muted">Пусто</div>`;
-  else done.forEach(c=>{
-    const st={COMPLETED:'✅',FAILED:'❌',REJECTED:'🚫'}[c.status];
-    html+=`<div class="card"><div class="lbl">${st} #${c.id} ${safe(c.extra_text||'?')}</div><div class="muted">${c.chip_type}×${c.amount} · ${fmt$(c.reward)}</div></div>`;
-  });
+function sContracts(){
+  const pend=state.contracts.filter(c=>c.status==="PENDING"),act=state.contracts.filter(c=>c.status==="ACTIVE"),done=state.contracts.filter(c=>["COMPLETED","FAILED","REJECTED"].includes(c.status)).slice(0,12);
+  let html=`<button class="btn pri" onclick="genCorps()">📨 Запросить у корпораций (3)</button>
+  <div class="sec">📥 Входящие (${pend.length})</div>`;
+  if(!pend.length)html+=`<div class="card"><div class="empty">Пусто</div></div>`;
+  else pend.forEach(c=>html+=`<div class="card"><div class="lbl">📨 ${safe(c.extra_text)} · #${c.id}</div><div class="val">${c.chip_type}×${c.amount}</div><div class="sub">💰 ${fmt$(c.reward)} · ❌ ${fmt$(c.penalty)} · ⏳ ${c.duration}д</div><div class="g2" style="margin-top:8px"><button class="btn sm pri" onclick="accC(${c.id})">✅</button><button class="btn sm dng" onclick="rejC(${c.id})">❌</button></div></div>`);
+  html+=`<div class="sec">📚 Активные (${act.length})</div>`;
+  if(!act.length)html+=`<div class="card"><div class="empty">Нет</div></div>`;
+  else act.forEach(c=>{const pr=c.delivered/c.amount*100;html+=`<div class="card"><div class="lbl">#${c.id} ${safe(c.extra_text)}</div><div class="val">${c.chip_type} ${c.delivered}/${c.amount}</div><div class="prog"><div class="pbar" style="width:${pr}%"></div></div><div class="sub">${Math.max(0,c.finish_day-state.day)}д · ${fmt$(c.reward)}</div></div>`});
+  html+=`<div class="sec">📖 История</div>`;
+  if(!done.length)html+=`<div class="card"><div class="empty">Пусто</div></div>`;
+  else done.forEach(c=>{const st={COMPLETED:"✅",FAILED:"❌",REJECTED:"🚫"}[c.status];html+=`<div class="card"><div class="lbl">${st} #${c.id} ${safe(c.extra_text)}</div><div class="sub">${c.chip_type}×${c.amount} · ${fmt$(c.reward)}</div></div>`});
   h(html);
 }
-function generate_corp_contracts(){
-  const cd=cur_day();
-  for(let i=0;i<3;i++){
-    const corp=CORPS[Math.floor(Math.random()*CORPS.length)];
-    const ct=Math.random()>0.5?"CPU":"GPU";
-    const amt=Math.floor(Math.random()*13)+3;
-    const rw=amt*(Math.floor(Math.random()*15001)+5000);
-    const pn=Math.floor(rw*0.5);const dur=Math.floor(Math.random()*91)+30;
-    state.contracts.push({id:state.next_contract_id++,sender_id:0,receiver_id:'self',template_key:`deliver_${ct.toLowerCase()}`,chip_type:ct,amount:amt,reward:rw,penalty:pn,duration:dur,started_day:cd,finish_day:cd+dur,delivered:0,status:'PENDING',extra_text:corp});
-  }
-  save();toast('📨 +3 предложения');render();
-}
-function accept_contract(id){
-  const c=state.contracts.find(x=>x.id===id);if(!c||c.status!=='PENDING')return;
-  c.status='ACTIVE';add_trust(2);save();toast('✅ Принят');render();
-}
-function reject_contract(id){
-  const c=state.contracts.find(x=>x.id===id);if(!c)return;
-  c.status='REJECTED';add_trust(-5);save();toast('❌ Отклонён');render();
-}
+function genCorps(){for(let i=0;i<3;i++){const ct=Math.random()>.5?"CPU":"GPU",amt=3+Math.random()*13|0,rw=amt*(5000+Math.random()*15000|0),dur=30+Math.random()*91|0;state.contracts.push({id:state.next_contract_id++,sender_id:0,receiver_id:"self",template_key:`deliver_${ct.toLowerCase()}`,chip_type:ct,amount:amt,reward:rw,penalty:Math.floor(rw*.5),duration:dur,started_day:state.day,finish_day:state.day+dur,delivered:0,status:"PENDING",extra_text:CORPS[Math.random()*CORPS.length|0]})}save();toast("📨 +3");render()}
+function accC(id){const c=state.contracts.find(x=>x.id===id);if(!c||c.status!=="PENDING")return;c.status="ACTIVE";addTrust(2);save();toast("✅");render()}
+function rejC(id){const c=state.contracts.find(x=>x.id===id);if(!c)return;c.status="REJECTED";addTrust(-5);save();toast("Отклонено");render()}
 
-// ═══════ MARKET ═══════
-function s_market(){
+function sMarket(){
   const all=state.ai_companies.flatMap(ai=>ai.chips.filter(c=>c.for_sale).map(c=>({...c,ai:ai.company_name})));
-  let html=`<h3>🛒 Рынок чипов (${all.length})</h3>`;
-  if(!all.length){h(html+`<div class="card muted">Рынок пуст. Ждите новых предложений от AI</div>`);return}
-  all.slice(0,20).forEach(c=>{
-    const pv=perf(c,c.ram_type);const ic=c.chip_type==='CPU'?'💻':'🎮';
-    html+=`<div class="card"><div class="lbl">${ic} <span class="tag ${c.chip_tier}">${c.chip_tier}</span> ${safe(c.chip_name)}</div><div class="val">🧩${c.cores} ⚡${c.freq} · 📊${pv.toFixed(0)}</div><div class="muted">от ${safe(c.ai)}</div><button class="btn sm pri" onclick="buy_market_chip('${c.chip_id}')">🛒 Купить ${fmt$(c.sell_price)}</button></div>`;
-  });
+  let html=`<div class="sec">🛒 Рынок (${all.length})</div>`;
+  if(!all.length)html+=`<div class="card"><div class="empty">Пусто — AI скоро выставят чипы</div></div>`;
+  else all.slice(0,24).forEach(c=>{const ic=c.chip_type==="CPU"?"💻":"🎮";html+=`<div class="card"><div class="lbl">${ic} <span class="tag ${c.chip_tier}">${c.chip_tier}</span> ${safe(c.chip_name)}</div><div class="val">🧩${c.cores} ⚡${c.freq} · 📊${perf(c,c.ram_type).toFixed(0)}</div><div class="sub">${safe(c.ai)}</div><button class="btn sm pri" style="margin-top:8px" onclick="buyMkt('${c.chip_id}')">🛒 ${fmt$(c.sell_price)}</button></div>`});
   h(html);
 }
-function buy_market_chip(cid){
-  let chip=null,ai=null;
-  for(const a of state.ai_companies){
-    const idx=a.chips.findIndex(c=>c.chip_id===cid);
-    if(idx>=0){chip=a.chips[idx];ai=a;a.chips.splice(idx,1);break}
-  }
-  if(!chip)return toast('❌ Уже продан');
-  if(state.player.capital<chip.sell_price)return toast(`❌ Нужно ${fmt$(chip.sell_price)}`);
-  state.player.capital-=chip.sell_price;ai.capital+=chip.sell_price;
-  const nc={...chip,chip_id:state.next_chip_id++,for_sale:0,lifetime_profit:0,sales_total:0};
-  delete nc.owner;delete nc.owner_name;
-  state.chips.push(nc);
-  save();toast(`✅ Куплен ${safe(chip.chip_name)}`);render();
-}
+function buyMkt(cid){let chip=null,ai=null;for(const a of state.ai_companies){const i=a.chips.findIndex(c=>c.chip_id===cid);if(i>=0){chip=a.chips.splice(i,1)[0];ai=a;break}}if(!chip)return toast("Нет");if(state.player.capital<chip.sell_price)return toast("❌");state.player.capital-=chip.sell_price;ai.capital+=chip.sell_price;const nc={...chip,chip_id:state.next_chip_id++,for_sale:0,lifetime_profit:0,sales_total:0};delete nc.owner;delete nc.owner_name;state.chips.push(nc);save();toast("✅");render()}
 
-// ═══════ BUYOUT ═══════
-function s_buyout(){
-  let html=`<h3>🏪 Покупка AI-компании</h3>`;
-  html+=`<div class="card muted">Купите компанию целиком: чипы, работники, R&D переходят к вам.</div>`;
-  state.ai_companies.forEach(ai=>{
-    const cv=ai.capital+(ai.total_shares-ai.shares_market)*ai.share_price;
-    html+=`<div class="card"><div class="lbl">🏢 ${safe(ai.company_name)}</div><div class="val">${fmt$(cv)}</div><div class="muted">Капитал ${fmt$(ai.capital)} · ${ai.chips.length} чипов · Доверие ${ai.trust.toFixed(0)}%</div><button class="btn sm pri" onclick="buyout_ai('${ai.id}')">🏪 Предложить цену</button></div>`;
-  });
+function sBuyout(){
+  let html=`<div class="sec">🏪 Покупка компании</div><div class="card"><div class="sub">Чипы AI перейдут к вам. Шанс зависит от цены.</div></div>`;
+  state.ai_companies.forEach(ai=>{const cv=ai.capital+(ai.total_shares-ai.shares_market)*ai.share_price;html+=`<div class="card"><div class="lbl">${safe(ai.company_name)}</div><div class="val">${fmt$(cv)}</div><div class="sub">Капитал ${fmt$(ai.capital)} · чипов ${ai.chips.length} · 🛡${ai.trust.toFixed(0)}</div><button class="btn sm pri" style="margin-top:8px" onclick="buyout('${ai.id}')">🏪 Предложить</button></div>`});
   h(html);
 }
-function buyout_ai(id){
-  const ai=state.ai_companies.find(a=>a.id===id);if(!ai)return;
-  const cv=ai.capital+(ai.total_shares-ai.shares_market)*ai.share_price;
-  const v=prompt(`Ваше предложение (рек. ${fmt$(cv*1.2)}):`,Math.round(cv*1.2));if(v==null)return;
-  const offer=parseFloat(v);if(isNaN(offer)||offer<=0)return toast('❌');
-  if(state.player.capital<offer)return toast(`❌ Нужно ${fmt$(offer)}`);
-  // AI accepts if offer >= 1.1 * value
-  const accept_chance=offer>=cv*1.4?1.0:offer>=cv*1.15?0.7:offer>=cv?0.3:0.05;
-  if(Math.random()<accept_chance){
-    state.player.capital-=offer;
-    // transfer chips
-    ai.chips.forEach(c=>{const nc={...c,chip_id:state.next_chip_id++,for_sale:0,contract_id:0,lifetime_profit:0,sales_total:0};delete nc.owner;delete nc.owner_name;state.chips.push(nc)});
-    // remove AI
-    state.ai_companies=state.ai_companies.filter(a=>a.id!==id);
-    delete state.share_ownership[id];
-    add_trust(5);add_news(`🤝 Поглощение ${safe(ai.company_name)}`,`Куплено за ${fmt$(offer)}`,'company');
-    save();toast(`✅ Куплено! +${ai.chips.length} чипов`);render();
-  } else {
-    add_trust(-1);toast('❌ AI отклонил предложение. Предложите больше!');
-  }
-}
+function buyout(id){const ai=state.ai_companies.find(a=>a.id===id);if(!ai)return;const cv=ai.capital+(ai.total_shares-ai.shares_market)*ai.share_price;const v=prompt(`Цена (рек. ${fmt$(cv*1.2)})`,Math.round(cv*1.2));if(v==null)return;const offer=+v;if(!(offer>0))return;if(state.player.capital<offer)return toast("❌");const chance=offer>=cv*1.4?1:offer>=cv*1.15?.7:offer>=cv?.3:.05;if(Math.random()<chance){state.player.capital-=offer;ai.chips.forEach(c=>{const nc={...c,chip_id:state.next_chip_id++,for_sale:0,contract_id:0,lifetime_profit:0,sales_total:0};delete nc.owner;delete nc.owner_name;state.chips.push(nc)});state.ai_companies=state.ai_companies.filter(a=>a.id!==id);delete state.share_ownership[id];addTrust(5);addNews(`🤝 ${ai.company_name}`,`Куплено за ${fmt$(offer)}`,"company");save();toast("✅ Куплено");render()}else{addTrust(-1);toast("❌ Отказали — предложите больше")}}
 
-// ═══════ RANK ═══════
-function s_rank(){
-  const all=[{name:state.player.company,val:company_value(state.player),self:true}];
-  state.ai_companies.forEach(ai=>all.push({name:ai.company_name,val:ai.capital+(ai.total_shares-ai.shares_market)*ai.share_price,self:false}));
-  all.sort((a,b)=>b.val-a.val);
-  const total=all.reduce((a,b)=>a+b.val,0)||1;
-  const my_pos=all.findIndex(x=>x.self)+1;
-  let html=`<div class="card"><div class="lbl">🌍 Мировой рейтинг</div><div class="val">Позиция #${my_pos} из ${all.length}</div><div class="muted">Ваша доля рынка: ${(company_value(state.player)/total*100).toFixed(2)}%</div></div>`;
-  html+=`<h3>Топ компаний</h3>`;
-  all.slice(0,15).forEach((c,i)=>{
-    html+=`<div class="card"><div class="lbl">${i+1}. ${safe(c.name)}${c.self?' ⭐':''}</div><div class="val">${fmt$(c.val)}</div><div class="muted">${(c.val/total*100).toFixed(2)}% рынка</div></div>`;
-  });
+function sRank(){
+  const all=[{name:state.player.company,val:companyVal(),self:true},...state.ai_companies.map(a=>({name:a.company_name,val:a.capital+(a.total_shares-a.shares_market)*a.share_price,self:false}))].sort((a,b)=>b.val-a.val);
+  const total=all.reduce((s,x)=>s+x.val,0)||1;const pos=Math.max(1,all.findIndex(x=>x.self)+1);
+  let html=`<div class="card"><div class="lbl">🌍 Мировой рейтинг</div><div class="val">Позиция #${pos} из ${all.length}</div><div class="sub">Доля рынка ${(companyVal()/total*100).toFixed(2)}%</div></div><div class="sec">Топ компаний</div>`;
+  all.forEach((c,i)=>html+=`<div class="card"><div class="lbl">${i+1}. ${safe(c.name)}${c.self?" ⭐":""}</div><div class="val">${fmt$(c.val)}</div><div class="sub">${(c.val/total*100).toFixed(2)}%</div></div>`);
   h(html);
 }
-
-// ═══════ TOP CHIPS ═══════
-function s_top(){
-  const all=[];
-  state.chips.forEach(c=>all.push({c,perf:perf(c,c.ram_type),owner:state.player.company,self:true}));
-  state.ai_companies.forEach(ai=>ai.chips.forEach(c=>all.push({c,perf:perf(c,c.ram_type),owner:ai.company_name,self:false})));
-  all.sort((a,b)=>b.perf-a.perf);
-  let html=`<h3>🏆 Топ чипов мира</h3>`;
-  if(!all.length){h(html+`<div class="card muted">Пусто</div>`);return}
-  all.slice(0,20).forEach((x,i)=>{
-    const ic=x.c.chip_type==='CPU'?'💻':'🎮';
-    html+=`<div class="card"><div class="lbl">${i+1}. ${ic} ${safe(x.c.chip_name)}${x.self?' ⭐':''}</div><div class="val">📊 ${x.perf.toFixed(1)}</div><div class="muted">🧩${x.c.cores} ⚡${x.c.freq} 🔬${x.c.techproc} · ${safe(x.owner)}</div></div>`;
-  });
+function sTop(){
+  const all=[];state.chips.forEach(c=>all.push({c,p:perf(c,c.ram_type),o:state.player.company,self:true}));
+  state.ai_companies.forEach(ai=>ai.chips.forEach(c=>all.push({c,p:perf(c,c.ram_type),o:ai.company_name,self:false})));
+  all.sort((a,b)=>b.p-a.p);
+  let html=`<div class="sec">🏆 Топ чипов</div>`;
+  if(!all.length)html+=`<div class="card"><div class="empty">Пусто</div></div>`;
+  else all.slice(0,20).forEach((x,i)=>{const ic=x.c.chip_type==="CPU"?"💻":"🎮";html+=`<div class="card"><div class="lbl">${i+1}. ${ic} ${safe(x.c.chip_name)}${x.self?" ⭐":""}</div><div class="val">📊 ${x.p.toFixed(1)}</div><div class="sub">🧩${x.c.cores} ⚡${x.c.freq} 🔬${x.c.techproc} · ${safe(x.o)}</div></div>`});
   h(html);
 }
-
-// ═══════ NEWS ═══════
-function s_news(kind){
-  const n=get_news(kind);
-  let html=`<h3>${kind==='company'?'🏢 Мои новости':'🎮 Новости игры'}</h3>`;
-  if(!n.length){h(html+`<div class="card muted">Пусто</div>`);return}
-  html+=`<div class="card">`;
-  n.forEach(x=>{
-    html+=`<div class="news"><div style="font-weight:600">${safe(x.title)}</div><div class="muted">${safe(x.content)}</div><div class="muted" style="font-size:10px">День ${x.day}</div></div>`;
-  });
-  html+=`</div>`;
+function sNews(kind){
+  const list=state.news.filter(n=>kind==="company"?n.type==="company":n.type==="game"||n.type==="server").slice(0,30);
+  let html=`<div class="sec">${kind==="company"?"🏢 Новости":"🎮 Новости игры"}</div><div class="card">`;
+  if(!list.length)html+=`<div class="empty">Пусто</div>`;
+  else list.forEach(n=>html+=`<div class="news"><div class="val" style="font-size:14px">${safe(n.title)}</div><div class="sub">${safe(n.content)} · день ${n.day}</div></div>`);
+  html+=`</div>`;h(html);
+}
+function sMsg(){
+  const inbox=state.contracts.filter(c=>c.status==="PENDING");
+  let html=`<div class="sec">📩 Входящие (${inbox.length})</div>`;
+  if(!inbox.length)html+=`<div class="card"><div class="empty">Нет сообщений</div></div>`;
+  else inbox.forEach(c=>html+=`<div class="card"><div class="lbl">📨 ${safe(c.extra_text)} #${c.id}</div><div class="val">${c.chip_type}×${c.amount}</div><div class="sub">💰 ${fmt$(c.reward)} · ❌ ${fmt$(c.penalty)} · ${c.duration}д</div><div class="g2" style="margin-top:8px"><button class="btn sm pri" onclick="accC(${c.id})">✅</button><button class="btn sm dng" onclick="rejC(${c.id})">❌</button></div></div>`);
   h(html);
 }
-function get_news(kind,l){l=l||30;return kind==='company'?state.news.filter(n=>n.type==='company').slice(0,l):state.news.filter(n=>n.type==='game'||n.type==='server').slice(0,l)}
-
-// ═══════ MSG ═══════
-function s_msg(){
-  const inbox=state.contracts.filter(c=>c.status==='PENDING'&&c.receiver_id==='self');
-  let html=`<h3>📩 Входящие (${inbox.length})</h3>`;
-  if(!inbox.length)html+=`<div class="card muted">Нет сообщений</div>`;
-  else inbox.forEach(c=>{
-    html+=`<div class="card"><div class="lbl">📨 ${safe(c.extra_text||'?')} · #${c.id}</div><div class="val">Контракт: ${c.chip_type}×${c.amount}</div><div class="muted">💰 ${fmt$(c.reward)} | ❌ ${fmt$(c.penalty)} | ⏳ ${c.duration}д</div><div class="g2" style="margin-top:6px"><button class="btn sm pri" onclick="accept_contract(${c.id});nav('msg')">✅</button><button class="btn sm dng" onclick="reject_contract(${c.id});nav('msg')">❌</button></div></div>`;
-  });
+function sDonate(){
+  let html=`<div class="card"><div class="lbl">⭐ Донат (офлайн-демо)</div><div class="val">Потрачено: ${state.player.stars_spent}</div><div class="sub">Пакеты активируются бесплатно</div></div>`;
+  Object.entries(DONATE_PACKS).forEach(([k,p])=>html+=`<div class="card"><div class="lbl">${p.title} · ⭐${p.stars}</div><div class="val">${p.desc}</div><div class="sub">+${fmt$(p.capital)} · 🛡+${p.trust} · 🖥+${p.drivers} · 📢+${p.ads}</div><button class="btn sm pri" style="margin-top:8px" onclick="claim('${k}')">Получить</button></div>`);
   h(html);
 }
-
-// ═══════ HELP ═══════
-function s_help(){
-  h(`
-    <div class="card"><h3>📖 Processor Tycoon v${VERSION}</h3></div>
-    <div class="card"><div class="lbl">🚀 Начало</div><div class="muted">1. Наймите рабочих (👥)<br>2. Изучите техпроцесс (🔬)<br>3. Создайте чип (🚀)<br>4. Выставите на продажу<br>5. Развивайте драйверы 🖥</div></div>
-    <div class="card"><div class="lbl">🔬 R&D</div><div class="muted">Параметры зависят от техпроцесса. Сначала снижайте нм → откроются большие капы для ядер/частоты/L3.</div></div>
-    <div class="card"><div class="lbl">💰 Экономика</div><div class="muted">Каждые 30 дней: ЗП (20% от суммы окладов) + прогрессивный налог (до 12%). Банкротство при $0.</div></div>
-    <div class="card"><div class="lbl">📊 Продажи</div><div class="muted">Зависят от: perf/цена, тира, доверия, популярности, драйверов, возраста чипа, маркетинга.</div></div>
-    <div class="card"><div class="lbl">🖥 Драйверы</div><div class="muted">Win 70% + Mac 20% + Lin 10%. Теряют 5% каждые 30 дней.</div></div>
-    <div class="card"><div class="lbl">📜 Контракты</div><div class="muted">Принял → чипы автоматически поставляются со склада. Не успел → штраф + минус доверие.</div></div>
-    <div class="card"><div class="lbl">📊 Акции</div><div class="muted">Эмиссия: цена -5%, доверие -3. Выкуп: цена +3%, доверие +3. Можно покупать акции AI.</div></div>
-    <div class="card"><div class="lbl">🏪 Buyout</div><div class="muted">Купите AI-компанию — её чипы перейдут к вам. Шанс согласия зависит от цены.</div></div>
-    <div class="card"><div class="lbl">🧠 ОЗУ</div><div class="muted">Новые типы разблокируются со временем: FPM→EDO→SDRAM→DDR→DDR2→...→DDR5. Каждый даёт +% производительности.</div></div>
-  `);
-}
-
-// ═══════ RULES ═══════
-function s_rules(){
-  h(`
-    <div class="card"><h3>📜 Правила</h3></div>
-    <div class="card">1. Уважение к игровому балансу</div>
-    <div class="card">2. Без сохранения нескольких компаний одновременно (для локальной версии)</div>
-    <div class="card">3. Играйте честно</div>
-    <div class="card">4. Нормальные названия компаний</div>
-    <div class="card">5. Приятной игры! 🎮</div>
-  `);
-}
-
-// ═══════ DONATE (simulated) ═══════
-function s_donate(){
+function claim(k){const p=DONATE_PACKS[k];if(!p)return;const me=state.player;me.capital+=p.capital;me.stars_spent+=p.stars;me.popularity=Math.min(500,me.popularity+p.trust*3+p.stars/10);if(p.trust)me.trust=Math.min(99.9,me.trust+p.trust);if(p.drivers){me.driver_win=Math.min(100,me.driver_win+p.drivers);me.driver_lin=Math.min(100,me.driver_lin+p.drivers);me.driver_mac=Math.min(100,me.driver_mac+p.drivers)}if(p.ads)state.chips.filter(c=>c.for_sale).forEach(c=>c.marketing_ticks=(c.marketing_ticks||0)+p.ads);save();toast(`🎉 ${p.title}`);render()}
+function sHelp(){h(`<div class="card"><div class="val">📖 v${VERSION}</div></div>
+<div class="card"><div class="lbl">Старт</div><div class="sub">1) Найми рабочих 2) R&D техпроцесс 3) Создай чип 4) Выставь на продажу 5) Драйверы</div></div>
+<div class="card"><div class="lbl">R&D</div><div class="sub">Сначала снижай нм — откроются капы ядер/частоты. Параллельные исследования +50% к сроку.</div></div>
+<div class="card"><div class="lbl">Продажи</div><div class="sub">perf/цена · тир · доверие · популярность · драйверы · возраст · маркетинг</div></div>
+<div class="card"><div class="lbl">Налоги</div><div class="sub">Каждые 30 дней: 20% от ЗП + налог 0–12%</div></div>
+<div class="card"><div class="lbl">Dev</div><div class="sub">Настройки → Dev-консоль</div></div>`)}
+function sSettings(){
   const p=state.player;
-  let html=`<div class="card"><div class="lbl">Ваш донат</div><div class="val">⭐ ${p.stars_spent}</div><div class="muted">💡 В офлайн-режиме донат симулируется бесплатно</div></div>`;
-  Object.entries(DONATE_PACKS).forEach(([k,pk])=>{
-    html+=`<div class="card"><div class="lbl">${pk.title} · ⭐${pk.stars}</div><div class="val">${pk.desc}</div><div class="muted">💵 +${fmt$(pk.capital)} · 🛡+${pk.trust} · 🖥+${pk.drivers}% · 📢+${pk.ads}д</div><button class="btn sm pri" onclick="apply_donate('${k}')">Активировать</button></div>`;
-  });
-  h(html);
-}
-function apply_donate(key){
-  const pk=DONATE_PACKS[key];if(!pk)return;
-  const p=state.player;
-  p.capital+=pk.capital;
-  p.stars_spent+=pk.stars;
-  p.popularity=Math.min(500,p.popularity+pk.trust*3+pk.stars/10);
-  if(pk.trust)p.trust=Math.max(0.1,Math.min(99.9,p.trust+pk.trust));
-  if(pk.drivers>0){p.driver_win=Math.min(100,p.driver_win+pk.drivers);p.driver_lin=Math.min(100,p.driver_lin+pk.drivers);p.driver_mac=Math.min(100,p.driver_mac+pk.drivers)}
-  if(pk.ads>0){state.chips.filter(c=>c.for_sale).forEach(c=>c.marketing_ticks=(c.marketing_ticks||0)+pk.ads)}
-  state.donations.push({pack:key,stars:pk.stars,day:cur_day()});
-  save();toast(`🎉 ${pk.title} активирован!`);render();
-}
+  h(`<div class="card"><div class="lbl">Компания</div><div class="val">${safe(p.company)}</div></div>
+  <button class="btn" onclick="rename()">✏️ Переименовать</button>
+  <button class="btn" onclick="toggleFreeze()">${p.is_frozen?"🔥 Разморозить":"❄️ Заморозить"}</button>
+  <button class="btn" onclick="exportSave()">💾 Экспорт</button>
+  <button class="btn" onclick="importSave()">📂 Импорт</button>
+  <button class="btn" onclick="$('dev').classList.toggle('act')">💻 Dev-консоль</button>
+  <button class="btn dng" onclick="if(confirm('Сброс?')){localStorage.removeItem(KEY);location.reload()}">🗑 Сброс</button>
+  <div class="card"><div class="sub">День ${state.day} · ${SEC_PER_DAY}с/день · AI ${state.ai_companies.length} · Чипы ${state.chips.length}</div></div>`)}
+function rename(){const v=prompt("Название",state.player.company);if(v==null)return;const n=v.trim().slice(0,35);if(!n)return;state.player.company=n;save();toast("✅");render()}
+function toggleFreeze(){state.player.is_frozen=!state.player.is_frozen;save();toast(state.player.is_frozen?"❄️":"🔥");render()}
+function exportSave(){const b=new Blob([JSON.stringify(state)],{type:"application/json"});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download=`tycoon_${Date.now()}.json`;a.click();URL.revokeObjectURL(u);toast("💾")}
+function importSave(){const i=document.createElement("input");i.type="file";i.accept=".json";i.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{state=Object.assign(NEW(),JSON.parse(ev.target.result));save();toast("✅");render()}catch(err){toast("❌")}};r.readAsText(f)};i.click()}
 
-// ═══════ SETTINGS ═══════
-function s_settings(){
-  const p=state.player;
-  h(`
-    <div class="card"><div class="lbl">Компания</div><div class="val">${safe(p.company)}</div></div>
-    <button class="btn" onclick="rename_company()">✏️ Переименовать</button>
-    <button class="btn" onclick="toggle_freeze()">${p.is_frozen?'🔥 Разморозить':'❄️ Заморозить'}</button>
-    <button class="btn" onclick="export_save()">💾 Экспорт сохранения</button>
-    <button class="btn" onclick="import_save()">📂 Импорт сохранения</button>
-    <button class="btn" onclick="toggle_dev()">💻 Dev-консоль</button>
-    <button class="btn dng" onclick="reset_game()">🗑 Сбросить прогресс</button>
-    <div class="card muted" style="margin-top:12px">Версия: ${VERSION}<br>День: ${state.day}<br>Скорость: ${SEC_PER_DAY}с/день<br>AI-компаний: ${state.ai_companies.length}<br>Всего новостей: ${state.news.length}</div>
-  `);
-}
-function rename_company(){
-  const v=prompt('Новое название:',state.player.company);if(v==null)return;
-  const n=v.trim().slice(0,35);if(!n)return toast('❌');
-  state.player.company=n;save();toast(`✅ ${safe(n)}`);render();
-}
-function toggle_freeze(){state.player.is_frozen=!state.player.is_frozen;save();toast(state.player.is_frozen?'❄️ Заморожено':'🔥 Разморожено');render()}
-function export_save(){
-  const data=JSON.stringify(state);
-  const blob=new Blob([data],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=`tycoon_${Date.now()}.json`;a.click();
-  URL.revokeObjectURL(url);toast('💾 Сохранено');
-}
-function import_save(){
-  const inp=document.createElement('input');inp.type='file';inp.accept='.json';
-  inp.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{state=Object.assign(NEW_STATE(),JSON.parse(ev.target.result));save();toast('✅ Импортировано');render();update_header()}catch(err){toast('❌ Ошибка')}};r.readAsText(f)};
-  inp.click();
-}
-function toggle_dev(){$('dev').classList.toggle('act')}
-
-// ═══════ DEV CONSOLE ═══════
-function dev_exec(cmd){
-  const parts=cmd.split(' ');const c=parts[0].toLowerCase();
+/* dev */
+function devExec(cmd){const p=cmd.trim().split(/\s+/),c=(p[0]||"").toLowerCase();
   try{
-    if(c==='help'){devlog('Команды: give N | pop N | trust N | driver N | speed N | day N | version X | gamenews T;C | broadcast T | ban [reason] | unban | freeze | reset | stats')}
-    else if(c==='stats'){devlog(`Day:${state.day} Cap:${fmt$(state.player.capital)} Trust:${state.player.trust.toFixed(1)} Pop:${state.player.popularity.toFixed(0)} Chips:${state.chips.length} Workers:${state.workers.length} AI:${state.ai_companies.length}`)}
-    else if(c==='give'&&parts[1]){state.player.capital+=parseFloat(parts[1]);devlog('✅ +'+parts[1]);save();update_header()}
-    else if(c==='pop'&&parts[1]){state.player.popularity=parseFloat(parts[1]);devlog('✅');save();update_header()}
-    else if(c==='trust'&&parts[1]){state.player.trust=Math.max(0.1,Math.min(99.9,parseFloat(parts[1])));devlog('✅');save();update_header()}
-    else if(c==='driver'&&parts[1]){const v=parseFloat(parts[1]);state.player.driver_win=v;state.player.driver_lin=v;state.player.driver_mac=v;devlog('✅');save();update_header()}
-    else if(c==='speed'&&parts[1]){SEC_PER_DAY=parseInt(parts[1]);devlog('✅ speed='+SEC_PER_DAY)}
-    else if(c==='day'&&parts[1]){state.day+=parseInt(parts[1]);devlog('✅ day='+state.day);save();update_header();render()}
-    else if(c==='version'&&parts[1]){devlog('ver override='+parts[1])}
-    else if(c==='gamenews'){const rest=cmd.slice(9);if(rest.includes(';')){const [t,ct]=rest.split(';');add_news(t.trim(),ct.trim(),'game');toast(`🎮 ${t.trim()}`);save();devlog('✅')}else devlog('❌ gamenews T ; C')}
-    else if(c==='broadcast'){const m=cmd.slice(10);add_news('📢 Broadcast',m,'server');toast(`📢 ${m}`);save();devlog('✅')}
-    else if(c==='ban'){const r=parts.slice(1).join(' ')||'Забанен';state.player.is_banned=true;state.player.ban_reason=r;save();devlog('🚫 '+r);render()}
-    else if(c==='unban'){state.player.is_banned=false;state.player.ban_reason='';save();devlog('✅');render()}
-    else if(c==='freeze'){toggle_freeze()}
-    else if(c==='reset'){reset_game()}
-    else devlog('? help')
-  }catch(e){devlog('err '+e)}
+    if(c==="help")devlog("give N | day N | speed N | driver N | pop N | trust N | gamenews T;C | reset | stats | freeze");
+    else if(c==="stats")devlog(`d${state.day} ${fmt$(state.player.capital)} t${state.player.trust.toFixed(1)} chips${state.chips.length}`);
+    else if(c==="give"){state.player.capital+=+p[1]||0;save();header();devlog("✅")}
+    else if(c==="day"){state.day+=+p[1]||0;save();header();render();devlog("✅")}
+    else if(c==="speed"){SEC_PER_DAY=+p[1]||2;devlog("speed="+SEC_PER_DAY)}
+    else if(c==="driver"){const v=+p[1]||0;state.player.driver_win=state.player.driver_lin=state.player.driver_mac=Math.max(0,Math.min(100,v));save();header();devlog("✅")}
+    else if(c==="pop"){state.player.popularity=Math.max(0,Math.min(500,+p[1]||0));save();header();devlog("✅")}
+    else if(c==="trust"){state.player.trust=Math.max(.1,Math.min(99.9,+p[1]||50));save();header();devlog("✅")}
+    else if(c==="gamenews"){const t=cmd.slice(8);const [a,b]=t.split(";");addNews((a||"").trim(),(b||"").trim(),"game");save();devlog("✅")}
+    else if(c==="freeze")toggleFreeze();
+    else if(c==="reset"){localStorage.removeItem(KEY);location.reload()}
+    else devlog("? help");
+  }catch(e){devlog("err "+e)}
 }
 
-// ═══════ INIT ═══════
+/* init */
 function init(){
-  const loaded=load();
-  if(!loaded){seed_free_workers();seed_ai();add_news('🌟 Добро пожаловать!',`Processor Tycoon v${VERSION} — оффлайн режим`,'game');save()}
-  prev_ram=new Set(ram_available());
-  update_nav();update_header();render();
+  if(!load()){seedWorkers();seedAI();addNews("🌟 Старт",`Processor Tycoon v${VERSION}`,"game");save()}
+  prevRam=new Set(ramAvail());
+  paintNav();header();render();
   setInterval(()=>{
     if(state.player.is_frozen||state.player.is_banned)return;
-    const now=Date.now();
-    if(now-state.last_tick>=SEC_PER_DAY*1000){
-      state.last_tick=now;state.day++;check_ram_unlocks(state.day);
-      const notifs=tick(state.day);
-      notifs.forEach(n=>toast(n,3500));
-      update_header();render();
+    if(Date.now()-state.last_tick>=SEC_PER_DAY*1000){
+      state.last_tick=Date.now();state.day++;
+      tick(state.day).forEach(n=>toast(n,3200));
+      header();render();
     }
-  },500);
-  $('dev-inp').addEventListener('keydown',e=>{if(e.key==='Enter'){const v=e.target.value.trim();if(v){devlog('> '+v);dev_exec(v);e.target.value=''}}});
-  $('mdl').addEventListener('click',e=>{if(e.target.id==='mdl')close_modal()});
+  },400);
+  $("dev-inp").addEventListener("keydown",e=>{if(e.key==="Enter"){const v=e.target.value.trim();if(!v)return;devlog("> "+v);devExec(v);e.target.value=""}});
+  $("mdl").addEventListener("click",e=>{if(e.target.id==="mdl")closeModal()});
 }
-window.addEventListener('DOMContentLoaded',init);
+document.addEventListener("DOMContentLoaded",init);
 </script>
 </body>
 </html>
